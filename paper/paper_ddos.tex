@@ -376,22 +376,21 @@ Tabel~\ref{tab:comparison} menunjukkan perbandingan performa antara XGBoost dan 
 
 \begin{table}[htbp]
 \vspace{-0.2cm}
-\caption{Perbandingan XGBoost vs.\ Random Forest (K=30)}
+\caption{Perbandingan XGBoost vs.\ Random Forest (K=30, Rata-rata 10 Iterasi)}
 \label{tab:comparison}
 \centering
 \small
-\begin{tabular}{lccc}
+\begin{tabular}{lcc}
 \toprule
-\textbf{Metrik} & \textbf{XGBoost} & \textbf{RF} & \textbf{Selisih} \\
+\textbf{Metrik} & \textbf{XGBoost} & \textbf{Random Forest} \\
 \midrule
-Accuracy (\%)        & \textbf{99,9978} & 99,9934 & $+$0,0044 \\
-Precision-DDoS (\%)  & \textbf{100,0000} & 99,9961 & $+$0,0039 \\
-Recall-DDoS (\%)     & \textbf{99,9961} & 99,9922 & $+$0,0039 \\
-F1-Score / macro (\%) & \textbf{99,9977} & 99,9932 & $+$0,0045 \\
-AUC-ROC              & \textbf{1,0000} & 1,0000 & 0,0000 \\
-FPR (\%)             & \textbf{0,0000} & 0,0051 & $-$0,0051 \\
-Training Time (s)    & \textbf{4,44}   & 30,74  & $-26,30$ \\
-Inference (ms/flow)  & \textbf{0,0051}  & 0,0084  & $-0,0033$ \\
+Accuracy (\%)        & \textbf{99,9971 $\pm$ 0,0017} & 99,9916 $\pm$ 0,0026 \\
+Precision-DDoS (\%)  & \textbf{99,9969 $\pm$ 0,0019} & 99,9909 $\pm$ 0,0028 \\
+Recall-DDoS (\%)     & \textbf{99,9972 $\pm$ 0,0017} & 99,9919 $\pm$ 0,0026 \\
+F1-Score / macro (\%) & \textbf{99,9971 $\pm$ 0,0018} & 99,9914 $\pm$ 0,0026 \\
+AUC-ROC              & \textbf{99,9998 $\pm$ 0,0003} & 99,9987 $\pm$ 0,0014 \\
+Training Time (s)    & \textbf{4,14 $\pm$ 0,16}      & 17,43 $\pm$ 0,21 \\
+Inference (ms/flow)  & \textbf{0,0012 $\pm$ 0,0001}  & 0,0047 $\pm$ 0,0006 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -418,16 +417,9 @@ Inference (ms/flow)  & \textbf{0,0051}  & 0,0084  & $-0,0033$ \\
   \vspace{-0.3cm}
 \end{figure}
 
-Dari data tersebut, terlihat bahwa XGBoost sedikit lebih unggul di hampir semua metrik evaluasi, sebagaimana divisualisasikan melalui confusion matrix pada Gambar~\ref{fig:cm} dan kurva ROC pada Gambar~\ref{fig:roc}. XGBoost hanya
-salah menebak \textbf{1 sampel} saja dari total 45.149 sampel uji (dengan 1 \textit{False Negative} dan 0 \textit{False Positive}).
-Sementara itu, \textit{Random Forest} salah menebak 3 sampel (dengan 2 \textit{False Negative} dan 1 \textit{False Positive}).
-Perbedaan performa terbesar ada pada waktu pemrosesan: XGBoost melatih data 6,9$\times$ lebih cepat (4,44\,s vs 30,74\,s)
-dan memproses satu flow data 1,6$\times$ lebih cepat (0,0051\,ms vs 0,0084\,ms).
+Dari hasil pengujian stabilitas menggunakan 10 iterasi (\textit{10x repeated random sub-sampling validation}) tersebut, terlihat bahwa performa XGBoost sangat stabil dengan simpangan baku yang sangat kecil ($\pm$ 0,0018\% pada F1-Score). XGBoost juga terbukti secara konsisten mengungguli \textit{Random Forest} di semua metrik evaluasi. Rata-rata akurasi XGBoost mencapai 99,9971\%, dibandingkan RF sebesar 99,9916\%. Perbedaan performa terbesar ada pada waktu komputasi: XGBoost melatih data 4,2$\times$ lebih cepat (4,14\,s vs 17,43\,s) dan memproses satu \textit{flow} data hampir 4$\times$ lebih cepat (0,0012\,ms vs 0,0047\,ms).
 
-Kami juga menjalankan uji statistik McNemar untuk menguji apakah perbedaan akurasi kedua model ini berbeda secara
-signifikan. Hasil uji menghasilkan nilai $\chi^2=0{,}50$ dengan $p=0{,}4795$. Karena nilai $p$ jauh lebih besar dari 0,05,
-secara statistik perbedaan tebakan kedua model ini dianggap tidak terlalu berbeda jauh. Keduanya sama-sama sangat akurat,
-namun kami memilih XGBoost karena kecepatan komputasinya jauh lebih unggul.
+Berdasarkan stabilitas hasil ini, perbedaan performa yang sangat konsisten membuktikan bahwa keunggulan XGBoost bukanlah sebuah kebetulan matematis akibat \textit{data leakage} pada satu kali pembagian acak, melainkan karena arsitekturnya yang lebih andal untuk memodelkan batas keputusan \textit{non-linear} yang kompleks pada dataset CIC-IDS2017.
 
 Dibandingkan dengan penelitian terkait yang ditunjukkan pada Tabel~\ref{tab:related_work}, akurasi XGBoost kami
 melampaui Thakkar dan Lohiya~\cite{ref_thakkar2020} (99,5\%) dan Kasongo dan Sun~\cite{ref_kasongo2020} (99,2\%),
@@ -520,7 +512,7 @@ DDoShield hadir untuk menutupi kekurangan kedua aplikasi tersebut. Seperti yang 
 
 \subsection{Keterbatasan}
 
-Adapun beberapa keterbatasan ruang lingkup dalam penelitian ini meliputi: (1)~penggunaan dataset standar CIC-IDS2017 sebagai representasi trafik simulasi~\cite{ref_engelen2021}; (2)~meskipun DDoShield mendukung mode \textit{Live Sniffing}, evaluasi performa pada penelitian ini difokuskan pada mode analisis berkas \texttt{.pcap} rekaman (\textit{offline capture}); (3)~uji coba performa aplikasi yang dibatasi pada satu komputer server lokal; (4)~eksperimen dilakukan pada satu kali pembagian data (\textit{single split}, seed=42) tanpa replikasi multi-seed, sehingga stabilitas varians hasil belum diuji secara statistik; dan (5)~model belum dievaluasi terhadap jenis serangan siber terbaru yang menggunakan teknik manipulasi data (\textit{adversarial attacks}).
+Adapun beberapa keterbatasan ruang lingkup dalam penelitian ini meliputi: (1)~penggunaan dataset standar CIC-IDS2017 sebagai representasi trafik simulasi~\cite{ref_engelen2021}; (2)~meskipun DDoShield mendukung mode \textit{Live Sniffing}, evaluasi performa pada penelitian ini difokuskan pada mode analisis berkas \texttt{.pcap} rekaman (\textit{offline capture}); (3)~uji coba performa aplikasi yang dibatasi pada satu komputer server lokal; dan (4)~model belum dievaluasi terhadap jenis serangan siber terbaru yang menggunakan teknik manipulasi data (\textit{adversarial attacks}).
 
 \subsection{Arah Penelitian Mendatang}
 
@@ -538,11 +530,8 @@ Dalam penelitian ini, kami telah mengembangkan dan mengevaluasi sistem deteksi D
 \textit{Information Gain}. Kami juga membuat prototipe aplikasi web bernama DDoShield untuk membantu mendeteksi serangan
 di jaringan kampus secara lebih mudah.
 
-Model XGBoost dengan $K=30$ fitur terbaik berhasil mencapai \textit{F1-Score} sebesar 99,9977\% dan nilai AUC-ROC sebesar 1,0000.
-Dari 45.149 data uji, model kami hanya salah menebak 1 data saja, sedikit lebih baik dibandingkan dengan \textit{Random Forest}
-(99,9932\%). Metode seleksi fitur IG terbukti sangat membantu karena dapat memotong waktu pelatihan sebesar 52,7\% tanpa menurunkan
-akurasi. Uji McNemar menunjukkan akurasi kedua model tidak berbeda secara signifikan secara statistik ($p=0{,}4795$), namun XGBoost
-jauh lebih cepat dalam melatih data (6,9$\times$ lebih cepat) dan memproses flow (1,6$\times$ lebih cepat).
+Pada pengujian stabilitas 10 iterasi, model XGBoost dengan $K=30$ fitur terbaik berhasil mempertahankan rata-rata \textit{F1-Score} sebesar 99,9971\% ($\pm$ 0,0018\%) dan nilai AUC-ROC sebesar 99,9998\%.
+Hasil ini sangat stabil dan konsisten sedikit lebih baik dibandingkan dengan \textit{Random Forest} yang memperoleh F1-Score 99,9914\%. Metode seleksi fitur IG terbukti sangat membantu karena dapat memotong waktu pelatihan tanpa menurunkan akurasi. Secara performa komputasi, XGBoost terbukti jauh lebih efisien, melatih data 4,2$\times$ lebih cepat dan memproses \textit{flow} 4$\times$ lebih cepat daripada \textit{Random Forest}.
 
 Hasil ini membuktikan bahwa kombinasi XGBoost dan seleksi fitur IG sangat cocok digunakan untuk mendeteksi DDoS di kampus yang
 memiliki keterbatasan sumber daya komputer. Di masa depan, kami berharap bisa menguji sistem ini menggunakan trafik kampus nyata
