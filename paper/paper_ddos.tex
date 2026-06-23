@@ -225,7 +225,7 @@ data uji (\textit{testing}) secara acak menggunakan \textit{stratified random sa
 Kami menghitung nilai IG untuk semua 78 fitur menggunakan fungsi \texttt{mutual\_info\_classif} dari
 pustaka Scikit-learn di Python (yang secara matematis menghitung \textit{Mutual Information}, ekuivalen dengan \textit{Information Gain} pada target diskrit). Setelah mendapatkan skor kepentingan masing-masing fitur, kami menggunakan
 fungsi \texttt{SelectKBest} untuk memilih fitur-fitur terbaik dengan variasi jumlah
-$K = \{5, 10, 15, 20, 30, \text{all}\}$. Secara keseluruhan, proses komputasi mulai dari \textit{preprocessing}, pelatihan, hingga inferensi dijalankan pada komputer lokal berspesifikasi Intel Core i7 dengan memori RAM 16GB dan sistem operasi Windows.
+$K = \{5, 10, 15, 20, 30, \text{all}\}$. Secara keseluruhan, proses komputasi mulai dari \textit{preprocessing}, pelatihan, hingga inferensi dijalankan pada komputer lokal berspesifikasi Intel Core i7 dengan memori RAM 16GB dan sistem operasi Windows. Lingkungan perangkat lunak yang digunakan adalah Python~3.14, Scikit-learn~1.8, XGBoost~3.2, dan Scapy~2.7. Seluruh pembagian data dan pengacakan dalam eksperimen ini menggunakan \texttt{random\_state}~=~42 untuk menjamin reprodusibilitas hasil.
 
 \subsection{Konfigurasi Model}
 
@@ -520,7 +520,7 @@ DDoShield hadir untuk menutupi kekurangan kedua aplikasi tersebut. Seperti yang 
 
 \subsection{Keterbatasan}
 
-Adapun beberapa keterbatasan ruang lingkup dalam penelitian ini meliputi: (1)~penggunaan dataset standar CIC-IDS2017 sebagai representasi trafik simulasi~\cite{ref_engelen2021}; (2)~meskipun DDoShield mendukung mode \textit{Live Sniffing}, evaluasi performa pada penelitian ini difokuskan pada mode analisis berkas \texttt{.pcap} rekaman (\textit{offline capture}); (3)~uji coba performa aplikasi yang dibatasi pada satu komputer server lokal; dan (4)~model belum dievaluasi terhadap jenis serangan siber terbaru yang menggunakan teknik manipulasi data (\textit{adversarial attacks}).
+Adapun beberapa keterbatasan ruang lingkup dalam penelitian ini meliputi: (1)~penggunaan dataset standar CIC-IDS2017 sebagai representasi trafik simulasi~\cite{ref_engelen2021}; (2)~meskipun DDoShield mendukung mode \textit{Live Sniffing}, evaluasi performa pada penelitian ini difokuskan pada mode analisis berkas \texttt{.pcap} rekaman (\textit{offline capture}); (3)~uji coba performa aplikasi yang dibatasi pada satu komputer server lokal; (4)~eksperimen dilakukan pada satu kali pembagian data (\textit{single split}, seed=42) tanpa replikasi multi-seed, sehingga stabilitas varians hasil belum diuji secara statistik; dan (5)~model belum dievaluasi terhadap jenis serangan siber terbaru yang menggunakan teknik manipulasi data (\textit{adversarial attacks}).
 
 \subsection{Arah Penelitian Mendatang}
 
