@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DDoShield — Sistem Deteksi DDoS Berbasis XGBoost</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <!-- Background Elements -->
+    <div class="bg-glow bg-glow-1"></div>
+    <div class="bg-glow bg-glow-2"></div>
+
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="logo">
+                <i class="fa-solid fa-shield-halved logo-icon"></i>
+                <span class="logo-text">DDo<span class="logo-accent">Shield</span></span>
+            </div>
+            <div class="system-status-header">
+                <span class="badge badge-online"><i class="fa-solid fa-circle fa-beat"></i> Server Online</span>
+            </div>
+        </header>
+
+        <!-- Main Workspace -->
+        <main class="app-main">
+            <!-- Row 1: File Uploader & Model Info -->
+            <div class="grid grid-2">
+                <!-- Card: File Uploader & Live Sniffer -->
+                <div class="card glassmorphism-card upload-section-card" style="padding-top: 1rem;">
+                    <div class="tab-container" style="display: flex; gap: 0.5rem; margin-bottom: 1.25rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem;">
+                        <button type="button" class="tab-btn active" id="tab-upload-btn" style="background: transparent; border: none; color: var(--text-muted); padding: 0.5rem 1rem; font-size: 0.9rem; font-weight: 600; cursor: pointer; border-radius: 6px; display: flex; align-items: center; gap: 0.5rem; transition: all 0.2s ease;">
+                            <i class="fa-solid fa-file-shield"></i> Analisis File
+                        </button>
+                        <button type="button" class="tab-btn" id="tab-sniff-btn" style="background: transparent; border: none; color: var(--text-muted); padding: 0.5rem 1rem; font-size: 0.9rem; font-weight: 600; cursor: pointer; border-radius: 6px; display: flex; align-items: center; gap: 0.5rem; transition: all 0.2s ease;">
+                            <i class="fa-solid fa-tower-broadcast"></i> Live Sniffing
+                        </button>
+                    </div>
+                    
+                    <div class="card-body" style="padding: 0;">
+                        <!-- Tab 1: File Upload Content -->
+                        <div id="upload-tab-content">
+                            <div class="card-header" style="margin-top: 0;">
+                                <h2><i class="fa-solid fa-file-arrow-up text-gradient"></i> Unggah Lalu Analisis</h2>
+                                <p class="subtitle">Unggah file capture lalu-lintas jaringan (.pcap atau .csv) untuk mendeteksi ancaman DDoS</p>
+                            </div>
+                            <form id="upload-form" enctype="multipart/form-data">
+                                <div class="drop-zone" id="drop-zone">
+                                    <i class="fa-solid fa-cloud-arrow-up drop-icon"></i>
+                                    <span class="drop-text">Seret & taruh file di sini atau klik untuk memilih</span>
+                                    <span class="file-info-limit">Format yang didukung: .pcap, .pcapng, .csv (Maksimal 100MB)</span>
+                                    <input type="file" name="file" id="file-input" accept=".pcap,.pcapng,.csv" style="display: none;">
+                                </div>
+                                <div id="file-selected-info" class="hidden">
+                                    <div class="file-meta">
+                                        <i class="fa-solid fa-file-code file-icon"></i>
+                                        <div class="file-details">
+                                            <span id="selected-file-name" class="filename">network_capture.pcap</span>
+                                            <span id="selected-file-size" class="filesize">4.2 MB</span>
+                                        </div>
+                                        <button type="button" id="remove-file-btn" class="btn-icon"><i class="fa-solid fa-xmark"></i></button>
+                                    </div>
+                                    <button type="submit" id="analyze-btn" class="btn btn-primary btn-block">
+                                        <i class="fa-solid fa-wand-magic-sparkles"></i> Deteksi DDoS Sekarang
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <!-- Tab 2: Live Sniffing Content -->
+                        <div id="sniff-tab-content" class="hidden">
+                            <div class="card-header" style="margin-top: 0;">
+                                <h2><i class="fa-solid fa-radar text-gradient"></i> Live Network Sniffing</h2>
+                                <p class="subtitle">Endus paket data secara langsung dari antarmuka jaringan lokal secara real-time</p>
+                            </div>
+                            <div class="sniff-controls" id="sniff-controls-wrapper">
+                                <div class="form-group" style="margin-bottom: 1.25rem;">
+                                    <label for="sniff-duration" style="display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.5rem; font-weight: 500;">DURASI MENGENDUS (DETIK):</label>
+                                    <select id="sniff-duration" style="width: 100%; height: 42px; background: rgba(255,255,255,0.05); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-main); padding: 0.5rem 1rem; outline: none;">
+                                        <option value="5" style="background-color: var(--bg-dark);">5 Detik (Cepat)</option>
+                                        <option value="10" selected style="background-color: var(--bg-dark);">10 Detik (Rekomendasi)</option>
+                                        <option value="20" style="background-color: var(--bg-dark);">20 Detik</option>
+                                        <option value="30" style="background-color: var(--bg-dark);">30 Detik</option>
+                                    </select>
+                                </div>
+                                <button type="button" id="start-sniff-btn" class="btn btn-primary btn-block" style="height: 44px;">
+                                    <i class="fa-solid fa-tower-broadcast"></i> Mulai Sniffing Trafik
+                                </button>
+                            </div>
+                            
+                            <!-- Sniffing Active Scan Animation -->
+                            <div id="sniff-scanning-container" class="hidden" style="text-align: center; padding: 1.5rem 0;">
+                                <div class="radar-ping-ring">
+                                    <div class="radar-pulse"></div>
+                                    <i class="fa-solid fa-tower-broadcast fa-spin-pulse radar-center-icon"></i>
+                                </div>
+                                <p class="sniff-status-text" style="margin-top: 1rem; font-weight: 600; color: var(--text-main);">Mengendus lalu lintas data lokal... (<span id="sniff-countdown">10</span>s)</p>
+                                <p class="subtitle" style="margin-top: 0.5rem; max-width: 320px; margin-left: auto; margin-right: auto; line-height: 1.4;">Silakan kirim/picu lalu lintas jaringan sekarang (misal: ping ke Google/Gateway, atau lakukan pengujian DDoS).</p>
+                            </div>
+                        </div>
+
+                        <!-- Loading Area -->
+                        <div id="loading-container" class="hidden">
+                            <div class="loading-spinner-wrapper">
+                                <div class="spinner"></div>
+                                <span class="loading-title">Memproses Capture Jaringan...</span>
+                                <span class="loading-subtitle" id="loading-step">Mengekstraksi flow dan menghitung fitur XGBoost (K=30)...</span>
+                            </div>
+                            <div class="progress-bar-container">
+                                <div class="progress-bar-fill" id="progress-bar-fill"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card: Model Info -->
+                <div class="card glassmorphism-card info-section-card">
+                    <div class="card-header">
+                        <h2><i class="fa-solid fa-microchip text-gradient"></i> Spesifikasi Model ML</h2>
+                        <p class="subtitle">Konfigurasi machine learning deteksi real-time</p>
+                    </div>
+                    <div class="card-body info-list-container">
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <span class="label">Algoritma Utama</span>
+                                <span class="value val-highlight">XGBoost Classifier</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="label">Seleksi Fitur</span>
+                                <span class="value">Information Gain (K=30)</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="label">Akurasi Model</span>
+                                <span class="value text-success">99,9978%</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="label">F1-Score</span>
+                                <span class="value text-success">99,9977%</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="label">Inference Speed</span>
+                                <span class="value">0,0051 ms/flow</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="label">Reduksi Fitur</span>
+                                <span class="value">61,5% (78 ke 30)</span>
+                            </div>
+                        </div>
+                        <div class="features-badge-container">
+                            <h3>5 Fitur Teratas (IG):</h3>
+                            <div class="badges-row">
+                                <span class="badge badge-feature">1. Total Length of Fwd Packets (0.652)</span>
+                                <span class="badge badge-feature">2. Subflow Fwd Bytes (0.652)</span>
+                                <span class="badge badge-feature">3. Average Packet Size (0.563)</span>
+                                <span class="badge badge-feature">4. Avg Bwd Segment Size (0.544)</span>
+                                <span class="badge badge-feature">5. Destination Port (0.542)</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Results Section (Initially Hidden) -->
+            <div id="results-container" class="hidden">
+                <!-- Row 2: Summary Stats -->
+                <div class="grid grid-4 stats-grid">
+                    <!-- Stat 1: Total Flow -->
+                    <div class="card stat-card">
+                        <div class="stat-icon icon-blue"><i class="fa-solid fa-network-wired"></i></div>
+                        <div class="stat-info">
+                            <span class="stat-label">Total Flow</span>
+                            <span class="stat-value" id="stat-total-flows">0</span>
+                        </div>
+                    </div>
+
+                    <!-- Stat 2: DDoS Detected -->
+                    <div class="card stat-card">
+                        <div class="stat-icon icon-danger"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                        <div class="stat-info">
+                            <span class="stat-label">Ancaman DDoS</span>
+                            <span class="stat-value text-danger" id="stat-ddos-flows">0</span>
+                        </div>
+                    </div>
+
+                    <!-- Stat 3: Benign Flows -->
+                    <div class="card stat-card">
+                        <div class="stat-icon icon-success"><i class="fa-solid fa-circle-check"></i></div>
+                        <div class="stat-info">
+                            <span class="stat-label">Lalu Lintas Aman</span>
+                            <span class="stat-value text-success" id="stat-benign-flows">0</span>
+                        </div>
+                    </div>
+
+                    <!-- Stat 4: Processing Time -->
+                    <div class="card stat-card">
+                        <div class="stat-icon icon-warning"><i class="fa-solid fa-gauge-high"></i></div>
+                        <div class="stat-info">
+                            <span class="stat-label">Kecepatan Deteksi</span>
+                            <span class="stat-value" id="stat-latency">0 ms</span>
+                            <span class="stat-subvalue" id="stat-ms-flow" style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.15rem;">0.0000 ms/flow</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Row 3: Threat Index & Charts -->
+                <div class="grid grid-3x2">
+                    <!-- Threat Indicator -->
+                    <div class="card glassmorphism-card col-span-1 flex-center-y">
+                        <div class="threat-dial-container">
+                            <h3>Indeks Ancaman DDoS</h3>
+                            <div class="threat-dial">
+                                <div class="threat-dial-inner">
+                                    <span class="threat-dial-pct" id="threat-pct">0%</span>
+                                    <span class="threat-dial-label" id="threat-lbl">SAFE</span>
+                                </div>
+                            </div>
+                            <p class="threat-status-desc" id="threat-desc">Lalu lintas jaringan dalam kondisi normal dan aman.</p>
+                        </div>
+                    </div>
+
+                    <!-- Chart Card -->
+                    <div class="card glassmorphism-card col-span-2">
+                        <div class="card-header">
+                            <h3><i class="fa-solid fa-chart-pie text-gradient"></i> Proporsi Kategori Trafik</h3>
+                        </div>
+                        <div class="card-body chart-body">
+                            <div class="chart-container">
+                                <canvas id="trafficChart"></canvas>
+                            </div>
+                            <div class="resource-usage">
+                                <h3>Kinerja Mesin Prediksi:</h3>
+                                <div class="resource-bar">
+                                    <div class="bar-header"><span>Throughput</span><span id="stat-throughput">0 flow/s</span></div>
+                                    <div class="bar-bg"><div class="bar-fill" style="width: 100%; background: var(--success);"></div></div>
+                                </div>
+                                <div class="resource-bar">
+                                    <div class="bar-header"><span>Beban CPU Server</span><span id="stat-cpu">0%</span></div>
+                                    <div class="bar-bg"><div class="bar-fill" id="bar-cpu" style="width: 0%; background: var(--warning);"></div></div>
+                                </div>
+                                <div class="resource-bar">
+                                    <div class="bar-header"><span>Konsumsi RAM Server</span><span id="stat-ram">0%</span></div>
+                                    <div class="bar-bg"><div class="bar-fill" id="bar-ram" style="width: 0%; background: var(--accent-gradient);"></div></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Row 4: Detailed Flow Analysis Table -->
+                <div class="card glassmorphism-card table-card">
+                    <div class="card-header table-card-header">
+                        <div>
+                            <h3><i class="fa-solid fa-list-check text-gradient"></i> Analisis Detail Aliran Data (Flow)</h3>
+                            <p class="subtitle">Menampilkan maksimal 200 flow terdeteksi dari pcap/csv</p>
+                        </div>
+                        <div class="table-actions">
+                            <input type="text" id="table-search" placeholder="Cari IP atau Port..." class="search-input">
+                            <button id="download-report" class="btn btn-secondary"><i class="fa-solid fa-download"></i> Unduh CSV</button>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="flow-table" id="flow-table">
+                            <thead>
+                                <tr>
+                                    <th>No</th>
+                                    <th>Protokol</th>
+                                    <th>IP Asal</th>
+                                    <th>IP Tujuan</th>
+                                    <th>Port Tujuan</th>
+                                    <th>Durasi (s)</th>
+                                    <th>Paket</th>
+                                    <th>Ukuran Data</th>
+                                    <th>Status Klasifikasi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="flow-table-body">
+                                <!-- Dynamic rows -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="app-footer">
+            <div class="footer-info">
+                <h3>DDoShield Prototype</h3>
+                <p>Sistem Deteksi DDoS Real-time berbasis XGBoost & Information Gain untuk Kampus.</p>
+                <p class="copyright">&copy; 2026 Politeknik Siber dan Sandi Negara. Hak Cipta Dilindungi.</p>
+            </div>
+            <div class="footer-team">
+                <h4>Tim Pengembang (Rekayasa Keamanan Siber):</h4>
+                <ul>
+                    <li><i class="fa-solid fa-user-shield"></i> Falito Eriano Nainggolan (falito.eriano@poltekssn.ac.id)</li>
+                    <li><i class="fa-solid fa-user-shield"></i> Dimas Surya Pratama (dimas.surya@poltekssn.ac.id)</li>
+                    <li><i class="fa-solid fa-user-shield"></i> Gita Olivia Silaban (gita.olivia@poltekssn.ac.id)</li>
+                </ul>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Explainable AI (XAI) Modal -->
+    <div id="xai-modal" class="modal-overlay hidden">
+        <div class="modal-content glassmorphism-card">
+            <div class="modal-header">
+                <h2 style="margin: 0;"><i class="fa-solid fa-brain text-gradient"></i> Transparansi Keputusan AI (XAI)</h2>
+                <button type="button" id="close-modal-btn" class="close-btn"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body">
+                <div class="flow-summary-box">
+                    <div class="summary-item">
+                        <span class="summary-label">Aliran Data (Flow):</span>
+                        <span class="summary-val" id="xai-flow-ident">-</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">Metode Deteksi:</span>
+                        <span class="summary-val" id="xai-flow-method">-</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">Keputusan Akhir:</span>
+                        <span class="summary-val" id="xai-flow-prediction">-</span>
+                    </div>
+                </div>
+
+                <div class="explanation-section" style="margin-bottom: 1.5rem;">
+                    <h3 style="font-size: 0.95rem; font-weight: 600; margin-bottom: 0.25rem;">Kontribusi Fitur Terbesar (SHAP Value)</h3>
+                    <p class="subtitle" style="margin-bottom: 1.25rem;">Visualisasi di bawah menunjukkan fitur mana yang paling mempengaruhi model XGBoost dalam mengambil keputusan untuk aliran ini.</p>
+                    
+                    <div id="xai-features-container" class="xai-features-list">
+                        <!-- Dynamic Feature Bars -->
+                    </div>
+                </div>
+
+                <div class="xai-description-box" id="xai-explanation-text">
+                    <!-- Text explanation -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JS Scripts -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>

@@ -1,0 +1,36 @@
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+
+# Flask / Web App folders
+uploads/*
+!uploads/.gitkeep
+
+# Large capture files in sample folder
+sample/**/*.pcap
+sample/**/*.pcapng
+sample/**/*.csv
+
+# Large dataset
+Friday-*.csv
+
+# LaTeX auto-generated files
+*.aux
+*.log
+*.blg
+*.bbl
+*.out
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+*.lof
+*.lot
+*.toc
