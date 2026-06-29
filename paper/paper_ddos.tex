@@ -487,6 +487,26 @@ serta melampaui RF yang dilaporkan Ullah dan Mahmoud~\cite{ref_ullah2020} (98,7\
 
 \subsection{Hasil Pengujian DDoShield}
 
+\begin{table*}[!t]
+\vspace{-0.2cm}
+\caption{Perbandingan Validasi DDoShield dengan Aplikasi Jaringan Umum}
+\label{tab:comparison_tools}
+\centering
+\small
+\setlength{\tabcolsep}{6pt}
+\begin{tabular}{p{3.5cm}p{4cm}p{4cm}p{4cm}}
+\toprule
+\textbf{Kriteria} & \textbf{DDoShield (Kami)} & \textbf{Wireshark} & \textbf{Snort} \\
+\midrule
+Metode Analisis & Machine Learning & Inspeksi Manual & Aturan Statis (\textit{Signature}) \\
+Validitas Hasil & Sangat Tinggi (Berdasarkan Dataset) & Standar Acuan Utama & Bergantung \textit{Update} Aturan \\
+Deteksi Serangan Baru & Bisa (Melihat Pola Anomali) & Bisa (Tergantung Analis) & Tidak Bisa \\
+Kecepatan Deteksi & Sangat Cepat (0,0051 ms/flow) & Lambat (Manual) & Cepat (Otomatis) \\
+Cara Analisis (Forensik) & Grafik Visual (\textit{TreeSHAP}) & Baca Kode \textit{Hex/Bytes} & Baca Teks Peringatan (\textit{Alert}) \\
+\bottomrule
+\end{tabular}
+\end{table*}
+
 Tabel~\ref{tab:ddoshield} menunjukkan hasil uji performa aplikasi DDoShield saat kami coba mengunggah file \texttt{.pcap}
 secara langsung ke server lokal kami.
 
@@ -527,28 +547,6 @@ Sebagai bukti validitas fungsional (\textit{functional testing}), kami menguji a
 % ============================================================
 \section{Pembahasan}
 \label{sec:diskusi}
-
-\begin{table*}[!t]
-\vspace{-0.2cm}
-\caption{Perbandingan Validasi DDoShield dengan Aplikasi Jaringan Umum}
-\label{tab:comparison_tools}
-\centering
-\small
-\setlength{\tabcolsep}{6pt}
-\begin{tabular}{p{3.5cm}p{4cm}p{4cm}p{4cm}}
-\toprule
-\textbf{Kriteria} & \textbf{DDoShield (Kami)} & \textbf{Wireshark} & \textbf{Snort} \\
-\midrule
-Metode Analisis & Machine Learning & Inspeksi Manual & Aturan Statis (\textit{Signature}) \\
-Validitas Hasil & Sangat Tinggi (Berdasarkan Dataset) & Standar Acuan Utama & Bergantung \textit{Update} Aturan \\
-Deteksi Serangan Baru & Bisa (Melihat Pola Anomali) & Bisa (Tergantung Analis) & Tidak Bisa \\
-Kecepatan Deteksi & Sangat Cepat (0,0051 ms/flow) & Lambat (Manual) & Cepat (Otomatis) \\
-Cara Analisis (Forensik) & Grafik Visual (\textit{TreeSHAP}) & Baca Kode \textit{Hex/Bytes} & Baca Teks Peringatan (\textit{Alert}) \\
-\bottomrule
-\end{tabular}
-\end{table*}
-
-% ============================================================
 
 \subsection{Interpretasi Temuan Utama}
 
@@ -602,7 +600,6 @@ secara langsung.
 
 % ── REFERENSI ───────────────────────────────────────────
 \vspace{-0.2cm}
-\newpage
 \renewcommand{\refname}{Referensi}
 \renewcommand{\bibname}{Referensi}
 \balance
