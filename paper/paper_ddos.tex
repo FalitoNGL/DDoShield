@@ -213,15 +213,15 @@ Dataset yang digunakan dalam penelitian ini adalah CIC-IDS2017 yang dikembangkan
 Tahap pembersihan data (\textit{preprocessing}) dilakukan melalui serangkaian langkah yang teratur untuk memastikan kualitas data sebelum digunakan dalam pelatihan model. Langkah-langkah tersebut adalah sebagai berikut:
 
 \begin{enumerate}
-    \item \textbf{Filtering Label}: Data difilter untuk hanya menyisakan baris dengan label DDoS dan BENIGN, karena kedua kelas inilah yang menjadi fokus klasifikasi biner dalam penelitian ini. Kelas lain seperti serangan selain DDoS tidak digunakan agar model yang dihasilkan bersifat spesifik untuk deteksi DDoS.
+    \item \textit{Filtering Label}: Data difilter untuk hanya menyisakan baris dengan label DDoS dan BENIGN, karena kedua kelas inilah yang menjadi fokus klasifikasi biner dalam penelitian ini. Kelas lain seperti serangan selain DDoS tidak digunakan agar model yang dihasilkan bersifat spesifik untuk deteksi DDoS.
 
-    \item \textbf{Penanganan Nilai Tak Hingga}: Nilai tak hingga ($\pm\infty$) yang muncul akibat pembagian dengan nol pada proses ekstraksi CICFlowMeter diubah menjadi nilai kosong (\textit{Not a Number} atau NaN) untuk memudahkan proses penanganan data kosong selanjutnya.
+    \item \textit{Penanganan Nilai Tak Hingga}: Nilai tak hingga ($\pm\infty$) yang muncul akibat pembagian dengan nol pada proses ekstraksi CICFlowMeter diubah menjadi nilai kosong (\textit{Not a Number} atau NaN) untuk memudahkan proses penanganan data kosong selanjutnya.
 
-    \item \textbf{Penghapusan Fitur dengan Banyak Data Kosong}: Fitur yang memiliki proporsi data kosong lebih dari 50\% dihapus dari dataset. Hal ini dilakukan karena fitur dengan banyak nilai hilang dianggap tidak reliabel dan dapat menurunkan kualitas model jika dipertahankan.
+    \item \textit{Penghapusan Fitur dengan Banyak Data Kosong}: Fitur yang memiliki proporsi data kosong lebih dari 50\% dihapus dari dataset. Hal ini dilakukan karena fitur dengan banyak nilai hilang dianggap tidak reliabel dan dapat menurunkan kualitas model jika dipertahankan.
 
-    \item \textbf{Imputasi Data Kosong}: Nilai kosong yang tersisa pada fitur-fitur lainnya diisi menggunakan nilai median dari kolom fitur tersebut. Median dipilih karena statistik ini lebih tangguh (\textit{robust}) terhadap anomali ekstrem dibandingkan rata-rata, sehingga lebih cocok untuk data lalu lintas jaringan yang sering mengandung nilai pencilan (\textit{outliers}).
+    \item \textit{Imputasi Data Kosong}: Nilai kosong yang tersisa pada fitur-fitur lainnya diisi menggunakan nilai median dari kolom fitur tersebut. Median dipilih karena statistik ini lebih tangguh (\textit{robust}) terhadap anomali ekstrem dibandingkan rata-rata, sehingga lebih cocok untuk data lalu lintas jaringan yang sering mengandung nilai pencilan (\textit{outliers}).
 
-    \item \textbf{Normalisasi Data}: Seluruh fitur numerik dinormalisasi menggunakan \texttt{StandardScaler} dari pustaka Scikit-learn. Proses ini mengubah setiap fitur sehingga memiliki nilai rata-rata 0 dan standar deviasi 1, yang bertujuan menyamakan skala antar fitur agar tidak ada fitur dengan rentang nilai besar yang mendominasi proses pembelajaran model.
+    \item \textit{Normalisasi Data}: Seluruh fitur numerik dinormalisasi menggunakan \texttt{StandardScaler} dari pustaka Scikit-learn. Proses ini mengubah setiap fitur sehingga memiliki nilai rata-rata 0 dan standar deviasi 1, yang bertujuan menyamakan skala antar fitur agar tidak ada fitur dengan rentang nilai besar yang mendominasi proses pembelajaran model.
 \end{enumerate}
 
 \subsection{Pembagian Data}
@@ -258,14 +258,14 @@ Model XGBoost dilatih menggunakan konfigurasi parameter terbaik yang diperoleh d
 
 Metrik evaluasi yang digunakan meliputi:
 \begin{itemize}
-    \item \textbf{Akurasi (\textit{Accuracy})}: Persentase prediksi benar dari keseluruhan data uji.
-    \item \textbf{Presisi (\textit{Precision})}: Proporsi prediksi DDoS yang benar terhadap seluruh prediksi DDoS, mengukur kemampuan model dalam meminimalkan \textit{false positive}.
-    \item \textbf{\textit{Recall}}: Proporsi data DDoS yang berhasil dideteksi dengan benar, mengukur kemampuan model dalam meminimalkan \textit{false negative}.
-    \item \textbf{F1-Score}: Rata-rata harmonik dari Presisi dan \textit{Recall}, yang menjadi metrik acuan utama karena memberikan evaluasi yang lebih komprehensif dibandingkan akurasi saja, terutama pada data dengan ketidakseimbangan kelas.
-    \item \textbf{\textit{False Positive Rate} (FPR)}: Persentase data normal yang salah terdeteksi sebagai DDoS.
-    \item \textbf{AUC-ROC}: Area di bawah kurva ROC yang mengukur kemampuan model dalam membedakan kedua kelas secara keseluruhan.
-    \item \textbf{Waktu Pelatihan (\textit{Training Time})}: Waktu yang dibutuhkan untuk melatih model, diukur dalam detik.
-    \item \textbf{Waktu Inferensi (\textit{Inference Time})}: Waktu yang dibutuhkan untuk memprediksi satu aliran data, diukur dalam milidetik per \textit{flow}.
+    \item \textit{Akurasi (Accuracy)}: Persentase prediksi benar dari keseluruhan data uji.
+    \item \textit{Presisi (Precision)}: Proporsi prediksi DDoS yang benar terhadap seluruh prediksi DDoS, mengukur kemampuan model dalam meminimalkan \textit{false positive}.
+    \item \textit{Recall}: Proporsi data DDoS yang berhasil dideteksi dengan benar, mengukur kemampuan model dalam meminimalkan \textit{false negative}.
+    \item \textit{F1-Score}: Rata-rata harmonik dari Presisi dan \textit{Recall}, yang menjadi metrik acuan utama karena memberikan evaluasi yang lebih komprehensif dibandingkan akurasi saja, terutama pada data dengan ketidakseimbangan kelas.
+    \item \textit{False Positive Rate (FPR)}: Persentase data normal yang salah terdeteksi sebagai DDoS.
+    \item \textit{AUC-ROC}: Area di bawah kurva ROC yang mengukur kemampuan model dalam membedakan kedua kelas secara keseluruhan.
+    \item \textit{Waktu Pelatihan (Training Time)}: Waktu yang dibutuhkan untuk melatih model, diukur dalam detik.
+    \item \textit{Waktu Inferensi (Inference Time)}: Waktu yang dibutuhkan untuk memprediksi satu aliran data, diukur dalam milidetik per \textit{flow}.
 \end{itemize}
 
 \subsection{Model Pembanding Random Forest}
@@ -295,8 +295,8 @@ Model terbaik yang diperoleh dari tahap eksperimen (XGBoost dengan $K=30$) kemud
 
 Aplikasi DDoShield mendukung dua mode operasional:
 \begin{enumerate}
-    \item \textbf{Analisis Offline}: Pengguna mengunggah berkas tangkapan jaringan dalam format \texttt{.pcap} atau \texttt{.csv}, kemudian aplikasi melakukan ekstraksi aliran, klasifikasi, dan menampilkan hasil deteksi pada dasbor web.
-    \item \textbf{Penangkapan Paket Real-Time} (\textit{Live Sniffing}): Aplikasi menangkap paket secara langsung dari antarmuka jaringan menggunakan pustaka Scapy untuk durasi tertentu, kemudian melakukan analisis secara langsung.
+    \item \textit{Analisis Offline}: Pengguna mengunggah berkas tangkapan jaringan dalam format \texttt{.pcap} atau \texttt{.csv}, kemudian aplikasi melakukan ekstraksi aliran, klasifikasi, dan menampilkan hasil deteksi pada dasbor web.
+    \item \textit{Penangkapan Paket Real-Time (Live Sniffing)}: Aplikasi menangkap paket secara langsung dari antarmuka jaringan menggunakan pustaka Scapy untuk durasi tertentu, kemudian melakukan analisis secara langsung.
 \end{enumerate}
 
 \paragraph{Ekstraksi Aliran.}
@@ -305,9 +305,9 @@ Berkas \texttt{.pcap} yang diunggah dibaca menggunakan Scapy, di mana paket-pake
 \paragraph{Mesin Deteksi Hibrida.}
 DDoShield menerapkan pendekatan deteksi hibrida yang menggabungkan aturan heuristik dan klasifikasi \textit{machine learning}:
 
-\textbf{a. Aturan Heuristik}: Sebelum data diproses oleh model \textit{machine learning}, aliran data disaring oleh \textit{Heuristics Engine} untuk mendeteksi serangan amplifikasi yang memiliki pola trafik khas. Aturan ini menerapkan batas ambang (\textit{threshold}) volume paket pada port-port layanan yang sering digunakan untuk serangan amplifikasi, yaitu DNS (Port 53), NTP (Port 123), SSDP (Port 1900), dan Memcached (Port 11211). Jika sebuah aliran memiliki lebih dari 50 paket pada port-port tersebut, aliran langsung diklasifikasikan sebagai serangan DDoS amplifikasi. Pendekatan hibrida ini bertujuan mengatasi keterbatasan data latih (\textit{generalization gap}) dan mempercepat deteksi untuk serangan dengan pola yang sudah sangat dikenal.
+\textit{a. Aturan Heuristik}: Sebelum data diproses oleh model \textit{machine learning}, aliran data disaring oleh \textit{Heuristics Engine} untuk mendeteksi serangan amplifikasi yang memiliki pola trafik khas. Aturan ini menerapkan batas ambang (\textit{threshold}) volume paket pada port-port layanan yang sering digunakan untuk serangan amplifikasi, yaitu DNS (Port 53), NTP (Port 123), SSDP (Port 1900), dan Memcached (Port 11211). Jika sebuah aliran memiliki lebih dari 50 paket pada port-port tersebut, aliran langsung diklasifikasikan sebagai serangan DDoS amplifikasi. Pendekatan hibrida ini bertujuan mengatasi keterbatasan data latih (\textit{generalization gap}) dan mempercepat deteksi untuk serangan dengan pola yang sudah sangat dikenal.
 
-\textbf{b. \textit{Pipeline Machine Learning}}: Aliran yang tidak memicu aturan heuristik diproses melalui \textit{pipeline} Scikit-learn yang terdiri dari:
+\textit{b. Pipeline Machine Learning}: Aliran yang tidak memicu aturan heuristik diproses melalui \textit{pipeline} Scikit-learn yang terdiri dari:
 \begin{itemize}
     \item \texttt{SimpleImputer} (\texttt{imputer.pkl}): Mengisi nilai kosong/NaN dengan median dari data latih.
     \item \texttt{StandardScaler} (\texttt{scaler.pkl}): Menormalisasi skala data numerik.
@@ -353,8 +353,8 @@ Sebagai instrumen investigasi forensik, DDoShield dilengkapi dengan kemampuan \t
 \paragraph{Pengujian Aplikasi.}
 Pengujian DDoShield dilakukan pada lingkungan lokal dengan skenario sebagai berikut:
 \begin{itemize}
-    \item \textbf{Pengujian Fungsional}: Aplikasi diuji menggunakan berkas \texttt{.pcap} yang telah diketahui isinya (mengandung jejak serangan DDoS) untuk memverifikasi kemampuan ekstraksi aliran, klasifikasi, dan visualisasi forensik. Hasil deteksi dibandingkan dengan analisis manual menggunakan Wireshark sebagai \textit{ground truth}.
-    \item \textbf{Pengujian Performa}: Aplikasi diuji menggunakan tiga ukuran berkas \texttt{.pcap} (100 flow, 1.000 flow, dan 10.000 flow) untuk mengukur latensi pemrosesan, \textit{throughput} model, penggunaan CPU, dan penggunaan memori RAM. Pengukuran dilakukan dalam kondisi server idle dan saat memproses data.
+    \item \textit{Pengujian Fungsional}: Aplikasi diuji menggunakan berkas \texttt{.pcap} yang telah diketahui isinya (mengandung jejak serangan DDoS) untuk memverifikasi kemampuan ekstraksi aliran, klasifikasi, dan visualisasi forensik. Hasil deteksi dibandingkan dengan analisis manual menggunakan Wireshark sebagai \textit{ground truth}.
+    \item \textit{Pengujian Performa}: Aplikasi diuji menggunakan tiga ukuran berkas \texttt{.pcap} (100 flow, 1.000 flow, dan 10.000 flow) untuk mengukur latensi pemrosesan, \textit{throughput} model, penggunaan CPU, dan penggunaan memori RAM. Pengukuran dilakukan dalam kondisi server idle dan saat memproses data.
 \end{itemize}
 
 
