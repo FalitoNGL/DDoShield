@@ -425,6 +425,52 @@ ukuran dan jumlah paket data yang dikirim, yang memang sangat mencerminkan pola 
   \vspace{-0.3cm}
 \end{figure}
 
+% ============================================================
+\begin{table*}[!t]
+\vspace{-0.2cm}
+\caption{Perbandingan Validasi DDoShield dengan Aplikasi Jaringan Umum}
+\label{tab:comparison_tools}
+\centering
+\small
+\setlength{\tabcolsep}{6pt}
+\begin{tabular}{p{3.5cm}p{4cm}p{4cm}p{4cm}}
+\toprule
+\textbf{Kriteria} & \textbf{DDoShield (Kami)} & \textbf{Wireshark} & \textbf{Snort} \\
+\midrule
+Metode Analisis & Machine Learning & Inspeksi Manual & Aturan Statis (\textit{Signature}) \\
+Validitas Hasil & Sangat Tinggi (Berdasarkan Dataset) & Standar Acuan Utama & Bergantung \textit{Update} Aturan \\
+Deteksi Serangan Baru & Bisa (Melihat Pola Anomali) & Bisa (Tergantung Analis) & Tidak Bisa \\
+Kecepatan Deteksi & Sangat Cepat (0,0051 ms/flow) & Lambat (Manual) & Cepat (Otomatis) \\
+Cara Analisis (Forensik) & Grafik Visual (\textit{TreeSHAP}) & Baca Kode \textit{Hex/Bytes} & Baca Teks Peringatan (\textit{Alert}) \\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+Tabel~\ref{tab:ddoshield} menunjukkan hasil uji performa aplikasi DDoShield saat kami coba mengunggah file \texttt{.pcap}
+secara langsung ke server lokal kami.
+
+\begin{table}[htbp]
+\vspace{-0.2cm}
+\caption{Hasil Pengujian Performa DDoShield}
+\label{tab:ddoshield}
+\centering
+\small
+\begin{tabular}{llcc}
+\toprule
+\textbf{Metrik} & \textbf{Nilai} & \textbf{Satuan} & \textbf{Kondisi} \\
+\midrule
+Latensi (100 flow)   & 6,08 & ms  & .pcap kecil \\
+Latensi (1000 flow)  & 8,89 & ms  & .pcap sedang \\
+Latensi (10000 flow) & 56,69 & ms  & .pcap besar \\
+Throughput           & 112.512,52 & flow/s & .pcap sedang \\
+CPU idle             & 17,1 & \% & Server idle \\
+CPU aktif            & 61,0 & \% & 1000 flow \\
+Memory idle          & 152,9 & MB & Server idle \\
+Memory aktif         & 430,6 & MB & 1000 flow \\
+FPR (BENIGN only)    & 0,00 & \% & 100\% normal \\
+\bottomrule
+\end{tabular}
+\end{table}
 \subsection{Pengaruh IG terhadap Efisiensi Komputasi}
 
 Dengan mengurangi jumlah fitur dari 78 menjadi K=30, kami berhasil mempercepat waktu pelatihan (\textit{training time})
@@ -537,52 +583,7 @@ Untuk penelitian selanjutnya, kami berencana untuk: (1)~mengumpulkan data trafik
 (3)~menguji ketahanan model terhadap serangan yang dimanipulasi; dan (4)~mencoba metode pembaruan model secara otomatis
 agar tetap akurat seiring berjalannya waktu (\textit{continual learning}).
 
-% ============================================================
-\begin{table*}[!t]
-\vspace{-0.2cm}
-\caption{Perbandingan Validasi DDoShield dengan Aplikasi Jaringan Umum}
-\label{tab:comparison_tools}
-\centering
-\small
-\setlength{\tabcolsep}{6pt}
-\begin{tabular}{p{3.5cm}p{4cm}p{4cm}p{4cm}}
-\toprule
-\textbf{Kriteria} & \textbf{DDoShield (Kami)} & \textbf{Wireshark} & \textbf{Snort} \\
-\midrule
-Metode Analisis & Machine Learning & Inspeksi Manual & Aturan Statis (\textit{Signature}) \\
-Validitas Hasil & Sangat Tinggi (Berdasarkan Dataset) & Standar Acuan Utama & Bergantung \textit{Update} Aturan \\
-Deteksi Serangan Baru & Bisa (Melihat Pola Anomali) & Bisa (Tergantung Analis) & Tidak Bisa \\
-Kecepatan Deteksi & Sangat Cepat (0,0051 ms/flow) & Lambat (Manual) & Cepat (Otomatis) \\
-Cara Analisis (Forensik) & Grafik Visual (\textit{TreeSHAP}) & Baca Kode \textit{Hex/Bytes} & Baca Teks Peringatan (\textit{Alert}) \\
-\bottomrule
-\end{tabular}
-\end{table*}
 
-Tabel~\ref{tab:ddoshield} menunjukkan hasil uji performa aplikasi DDoShield saat kami coba mengunggah file \texttt{.pcap}
-secara langsung ke server lokal kami.
-
-\begin{table}[htbp]
-\vspace{-0.2cm}
-\caption{Hasil Pengujian Performa DDoShield}
-\label{tab:ddoshield}
-\centering
-\small
-\begin{tabular}{llcc}
-\toprule
-\textbf{Metrik} & \textbf{Nilai} & \textbf{Satuan} & \textbf{Kondisi} \\
-\midrule
-Latensi (100 flow)   & 6,08 & ms  & .pcap kecil \\
-Latensi (1000 flow)  & 8,89 & ms  & .pcap sedang \\
-Latensi (10000 flow) & 56,69 & ms  & .pcap besar \\
-Throughput           & 112.512,52 & flow/s & .pcap sedang \\
-CPU idle             & 17,1 & \% & Server idle \\
-CPU aktif            & 61,0 & \% & 1000 flow \\
-Memory idle          & 152,9 & MB & Server idle \\
-Memory aktif         & 430,6 & MB & 1000 flow \\
-FPR (BENIGN only)    & 0,00 & \% & 100\% normal \\
-\bottomrule
-\end{tabular}
-\end{table}
 \section{Kesimpulan}
 \label{sec:kesimpulan}
 % ============================================================
