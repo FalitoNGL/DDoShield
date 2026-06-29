@@ -488,7 +488,16 @@ serta melampaui RF yang dilaporkan Ullah dan Mahmoud~\cite{ref_ullah2020} (98,7\
 
 \subsection{Hasil Pengujian DDoShield}
 
-\begin{table*}[!b]
+Tabel~\ref{tab:ddoshield} menunjukkan hasil uji performa aplikasi DDoShield saat kami coba mengunggah file \texttt{.pcap} secara langsung ke server lokal kami. Aplikasi DDoShield dapat menganalisis file \texttt{.pcap} kecil (100 flow) dengan waktu latensi hanya 6,08\,ms,
+pcap sedang (1.000 flow) dalam 8,89\,ms, dan pcap besar (10.000 flow) dalam 56,69\,ms. Kecepatan pemrosesan
+inferensi \textit{backend} (\textit{model throughput}) mencapai puncak di angka 112.512,52 flow per detik (angka ini adalah kecepatan prediksi model di memori, tidak termasuk waktu tunggu ekstraksi \textit{parsing} PCAP oleh Scapy). Saat server dalam kondisi diam (\textit{idle}), memori RAM
+yang digunakan adalah 152,9\,MB dengan beban CPU 17,1\%. Ketika memproses file dengan 1.000 flow, memori RAM naik
+menjadi 430,6\,MB dan beban CPU menjadi 61,0\%. Hasil \textit{False Positive Rate} (FPR) adalah 0,00\%, yang menunjukkan
+bahwa aplikasi ini tidak salah mendeteksi data normal sebagai serangan.
+
+Sebagai bukti validitas fungsional (\textit{functional testing}), kami menguji aplikasi ini secara langsung menggunakan sampel berkas \texttt{.pcap} yang memuat jejak serangan jaringan. DDoShield terbukti mampu mengelompokkan paket-paket mentah menjadi aliran terstruktur (\textit{flows}) secara otomatis dan berhasil melabeli aliran serangan secara tepat. Fitur forensik visual \textit{TreeSHAP} pada dasbor DDoShield juga berhasil menyoroti anomali pada fitur \texttt{Flow Packets/s} dan \texttt{Fwd Packet Length} sebagai pemicu vonis DDoS. Temuan ini konsisten dengan hasil analisis manual yang kami lakukan menggunakan Wireshark pada berkas yang sama. Hal ini menjadi bukti bahwa mekanisme \textit{parsing} PCAP dan inferensi XGBoost dalam aplikasi DDoShield berjalan dengan benar dan dapat diandalkan.
+
+\begin{table*}[!t]
 \vspace{-0.2cm}
 \caption{Perbandingan Validasi DDoShield dengan Aplikasi Jaringan Umum}
 \label{tab:comparison_tools}
@@ -506,13 +515,8 @@ Kecepatan Deteksi & Sangat Cepat (0,0051 ms/flow) & Lambat (Manual) & Cepat (Oto
 Cara Analisis (Forensik) & Grafik Visual (\textit{TreeSHAP}) & Baca Kode \textit{Hex/Bytes} & Baca Teks Peringatan (\textit{Alert}) \\
 \bottomrule
 \end{tabular}
-\end{table*}
 
-Tabel~\ref{tab:ddoshield} menunjukkan hasil uji performa aplikasi DDoShield saat kami coba mengunggah file \texttt{.pcap}
-secara langsung ke server lokal kami.
-
-\begin{table}[htbp]
-\vspace{-0.2cm}
+\vspace{0.3cm}
 \caption{Hasil Pengujian Performa DDoShield}
 \label{tab:ddoshield}
 \centering
@@ -532,14 +536,7 @@ Memory aktif         & 430,6 & MB & 1000 flow \\
 FPR (BENIGN only)    & 0,00 & \% & 100\% normal \\
 \bottomrule
 \end{tabular}
-\end{table}
-pcap sedang (1.000 flow) dalam 8,89\,ms, dan pcap besar (10.000 flow) dalam 56,69\,ms. Kecepatan pemrosesan
-inferensi \textit{backend} (\textit{model throughput}) mencapai puncak di angka 112.512,52 flow per detik (angka ini adalah kecepatan prediksi model di memori, tidak termasuk waktu tunggu ekstraksi \textit{parsing} PCAP oleh Scapy). Saat server dalam kondisi diam (\textit{idle}), memori RAM
-yang digunakan adalah 152,9\,MB dengan beban CPU 17,1\%. Ketika memproses file dengan 1.000 flow, memori RAM naik
-menjadi 430,6\,MB dan beban CPU menjadi 61,0\%. Hasil \textit{False Positive Rate} (FPR) adalah 0,00\%, yang menunjukkan
-bahwa aplikasi ini tidak salah mendeteksi data normal sebagai serangan.
-
-Sebagai bukti validitas fungsional (\textit{functional testing}), kami menguji aplikasi ini secara langsung menggunakan sampel berkas \texttt{.pcap} yang memuat jejak serangan jaringan. DDoShield terbukti mampu mengelompokkan paket-paket mentah menjadi aliran terstruktur (\textit{flows}) secara otomatis dan berhasil melabeli aliran serangan secara tepat. Fitur forensik visual \textit{TreeSHAP} pada dasbor DDoShield juga berhasil menyoroti anomali pada fitur \texttt{Flow Packets/s} dan \texttt{Fwd Packet Length} sebagai pemicu vonis DDoS. Temuan ini konsisten dengan hasil analisis manual yang kami lakukan menggunakan Wireshark pada berkas yang sama. Hal ini menjadi bukti bahwa mekanisme \textit{parsing} PCAP dan inferensi XGBoost dalam aplikasi DDoShield berjalan dengan benar dan dapat diandalkan.
+\end{table*}
 
 
 
