@@ -425,52 +425,6 @@ ukuran dan jumlah paket data yang dikirim, yang memang sangat mencerminkan pola 
   \vspace{-0.3cm}
 \end{figure}
 
-% ============================================================
-\begin{table*}[!t]
-\vspace{-0.2cm}
-\caption{Perbandingan Validasi DDoShield dengan Aplikasi Jaringan Umum}
-\label{tab:comparison_tools}
-\centering
-\small
-\setlength{\tabcolsep}{6pt}
-\begin{tabular}{p{3.5cm}p{4cm}p{4cm}p{4cm}}
-\toprule
-\textbf{Kriteria} & \textbf{DDoShield (Kami)} & \textbf{Wireshark} & \textbf{Snort} \\
-\midrule
-Metode Analisis & Machine Learning & Inspeksi Manual & Aturan Statis (\textit{Signature}) \\
-Validitas Hasil & Sangat Tinggi (Berdasarkan Dataset) & Standar Acuan Utama & Bergantung \textit{Update} Aturan \\
-Deteksi Serangan Baru & Bisa (Melihat Pola Anomali) & Bisa (Tergantung Analis) & Tidak Bisa \\
-Kecepatan Deteksi & Sangat Cepat (0,0051 ms/flow) & Lambat (Manual) & Cepat (Otomatis) \\
-Cara Analisis (Forensik) & Grafik Visual (\textit{TreeSHAP}) & Baca Kode \textit{Hex/Bytes} & Baca Teks Peringatan (\textit{Alert}) \\
-\bottomrule
-\end{tabular}
-\end{table*}
-
-Tabel~\ref{tab:ddoshield} menunjukkan hasil uji performa aplikasi DDoShield saat kami coba mengunggah file \texttt{.pcap}
-secara langsung ke server lokal kami.
-
-\begin{table}[htbp]
-\vspace{-0.2cm}
-\caption{Hasil Pengujian Performa DDoShield}
-\label{tab:ddoshield}
-\centering
-\small
-\begin{tabular}{llcc}
-\toprule
-\textbf{Metrik} & \textbf{Nilai} & \textbf{Satuan} & \textbf{Kondisi} \\
-\midrule
-Latensi (100 flow)   & 6,08 & ms  & .pcap kecil \\
-Latensi (1000 flow)  & 8,89 & ms  & .pcap sedang \\
-Latensi (10000 flow) & 56,69 & ms  & .pcap besar \\
-Throughput           & 112.512,52 & flow/s & .pcap sedang \\
-CPU idle             & 17,1 & \% & Server idle \\
-CPU aktif            & 61,0 & \% & 1000 flow \\
-Memory idle          & 152,9 & MB & Server idle \\
-Memory aktif         & 430,6 & MB & 1000 flow \\
-FPR (BENIGN only)    & 0,00 & \% & 100\% normal \\
-\bottomrule
-\end{tabular}
-\end{table}
 \subsection{Pengaruh IG terhadap Efisiensi Komputasi}
 
 Dengan mengurangi jumlah fitur dari 78 menjadi K=30, kami berhasil mempercepat waktu pelatihan (\textit{training time})
@@ -534,8 +488,51 @@ serta melampaui RF yang dilaporkan Ullah dan Mahmoud~\cite{ref_ullah2020} (98,7\
 
 \subsection{Hasil Pengujian DDoShield}
 
+\begin{table*}[!t]
+\vspace{-0.2cm}
+\caption{Perbandingan Validasi DDoShield dengan Aplikasi Jaringan Umum}
+\label{tab:comparison_tools}
+\centering
+\small
+\setlength{\tabcolsep}{6pt}
+\begin{tabular}{p{3.5cm}p{4cm}p{4cm}p{4cm}}
+\toprule
+\textbf{Kriteria} & \textbf{DDoShield (Kami)} & \textbf{Wireshark} & \textbf{Snort} \\
+\midrule
+Metode Analisis & Machine Learning & Inspeksi Manual & Aturan Statis (\textit{Signature}) \\
+Validitas Hasil & Sangat Tinggi (Berdasarkan Dataset) & Standar Acuan Utama & Bergantung \textit{Update} Aturan \\
+Deteksi Serangan Baru & Bisa (Melihat Pola Anomali) & Bisa (Tergantung Analis) & Tidak Bisa \\
+Kecepatan Deteksi & Sangat Cepat (0,0051 ms/flow) & Lambat (Manual) & Cepat (Otomatis) \\
+Cara Analisis (Forensik) & Grafik Visual (\textit{TreeSHAP}) & Baca Kode \textit{Hex/Bytes} & Baca Teks Peringatan (\textit{Alert}) \\
+\bottomrule
+\end{tabular}
+\end{table*}
 
-Aplikasi DDoShield dapat menganalisis file \texttt{.pcap} kecil (100 flow) dengan waktu latensi hanya 6,08\,ms,
+Tabel~\ref{tab:ddoshield} menunjukkan hasil uji performa aplikasi DDoShield saat kami coba mengunggah file \texttt{.pcap}
+secara langsung ke server lokal kami.
+
+\begin{table}[htbp]
+\vspace{-0.2cm}
+\caption{Hasil Pengujian Performa DDoShield}
+\label{tab:ddoshield}
+\centering
+\small
+\begin{tabular}{llcc}
+\toprule
+\textbf{Metrik} & \textbf{Nilai} & \textbf{Satuan} & \textbf{Kondisi} \\
+\midrule
+Latensi (100 flow)   & 6,08 & ms  & .pcap kecil \\
+Latensi (1000 flow)  & 8,89 & ms  & .pcap sedang \\
+Latensi (10000 flow) & 56,69 & ms  & .pcap besar \\
+Throughput           & 112.512,52 & flow/s & .pcap sedang \\
+CPU idle             & 17,1 & \% & Server idle \\
+CPU aktif            & 61,0 & \% & 1000 flow \\
+Memory idle          & 152,9 & MB & Server idle \\
+Memory aktif         & 430,6 & MB & 1000 flow \\
+FPR (BENIGN only)    & 0,00 & \% & 100\% normal \\
+\bottomrule
+\end{tabular}
+\end{table}
 pcap sedang (1.000 flow) dalam 8,89\,ms, dan pcap besar (10.000 flow) dalam 56,69\,ms. Kecepatan pemrosesan
 inferensi \textit{backend} (\textit{model throughput}) mencapai puncak di angka 112.512,52 flow per detik (angka ini adalah kecepatan prediksi model di memori, tidak termasuk waktu tunggu ekstraksi \textit{parsing} PCAP oleh Scapy). Saat server dalam kondisi diam (\textit{idle}), memori RAM
 yang digunakan adalah 152,9\,MB dengan beban CPU 17,1\%. Ketika memproses file dengan 1.000 flow, memori RAM naik
@@ -553,8 +550,8 @@ Sebagai bukti validitas fungsional (\textit{functional testing}), kami menguji a
 \subsection{Interpretasi Temuan Utama}
 
 Keberhasilan model XGBoost dalam mendeteksi DDoS dengan F1-Score mendekati 100\% dikarenakan cara kerja algoritma
-\textit{gradient boosting} yang memperbaiki kesalahan tebakan model sebelumnya di setiap pohon keputusan baru~\cite{ref_xgboost2016}.
-Selain itu, teknik regularisasi yang ada pada XGBoost juga sangat membantu mencegah model agar tidak terlalu menghafal
+\textit{gradient boosting} yang memperbaiki kesalahan tebakan model sebelumnya di setiap pohon keputusan baru~\cite{ref_xgboost2016},
+ditambah dengan teknik regularisasi yang sangat membantu mencegah model agar tidak terlalu menghafal
 data latih (\textit{overfitting})~\cite{ref_thakkar2020}. Akurasi yang sangat tinggi ini juga dilaporkan oleh peneliti
 lain pada dataset CIC-IDS2017~\cite{ref_engelen2021} karena kelas data pada dataset ini memang memiliki pola trafik
 yang sangat jelas dibedakan secara statistik.
