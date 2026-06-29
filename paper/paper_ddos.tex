@@ -20,7 +20,6 @@
 \usepackage{url}
 \usepackage{hyperref}
 \usepackage{cite}
-\usepackage{balance}
 \usepackage[indonesian]{babel}
 
 \hypersetup{
@@ -573,7 +572,6 @@ DDoShield hadir untuk menutupi kekurangan kedua aplikasi tersebut. Seperti yang 
 
 
 
-\balance
 \subsection{Keterbatasan}
 
 Adapun beberapa keterbatasan ruang lingkup dalam penelitian ini meliputi: (1)~penggunaan dataset standar CIC-IDS2017 sebagai representasi trafik simulasi~\cite{ref_engelen2021}; (2)~meskipun DDoShield mendukung mode \textit{Live Sniffing}, evaluasi performa pada penelitian ini difokuskan pada mode analisis berkas \texttt{.pcap} rekaman (\textit{offline capture}); (3)~uji coba performa aplikasi yang dibatasi pada satu komputer server lokal; dan (4)~model belum dievaluasi terhadap jenis serangan siber terbaru yang menggunakan teknik manipulasi data (\textit{adversarial attacks}).
@@ -608,6 +606,7 @@ secara langsung.
 \renewcommand{\bibname}{Referensi}
 \bibliographystyle{IEEEtran}
 \scriptsize
+\IEEEtriggeratref{6}
 \bibliography{references}
 
 \end{document}
