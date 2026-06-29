@@ -21,6 +21,7 @@
 \usepackage{hyperref}
 \usepackage{cite}
 \usepackage{float}
+\usepackage{balance}
 \usepackage[indonesian]{babel}
 
 \hypersetup{
@@ -526,26 +527,6 @@ Sebagai bukti validitas fungsional (\textit{functional testing}), kami menguji a
 % ============================================================
 \section{Pembahasan}
 \label{sec:diskusi}
-% ============================================================
-
-\subsection{Interpretasi Temuan Utama}
-
-Keberhasilan model XGBoost dalam mendeteksi DDoS dengan F1-Score mendekati 100\% dikarenakan cara kerja algoritma
-\textit{gradient boosting} yang memperbaiki kesalahan tebakan model sebelumnya di setiap pohon keputusan baru~\cite{ref_xgboost2016}.
-Selain itu, teknik regularisasi yang ada pada XGBoost juga sangat membantu mencegah model agar tidak terlalu menghafal
-data latih (\textit{overfitting})~\cite{ref_thakkar2020}. Akurasi yang sangat tinggi ini juga dilaporkan oleh peneliti
-lain pada dataset CIC-IDS2017~\cite{ref_engelen2021} karena kelas data pada dataset ini memang memiliki pola trafik
-yang sangat jelas dibedakan secara statistik.
-
-\subsection{Implikasi Praktis untuk Kampus}
-
-Karena proses pendeteksian XGBoost sangat cepat (0,0051\,ms per flow), aplikasi DDoShield ini dapat diintegrasikan
-langsung pada router kampus untuk menganalisis salinan trafik (\textit{port mirroring}) secara berkala. Aplikasi ini juga
-dilengkapi dengan REST API sehingga bisa dihubungkan ke sistem pemantauan keamanan lain yang sudah ada di kampus.
-
-\subsection{Validasi dan Keunggulan Dibandingkan Aplikasi Lain}
-
-Untuk memastikan program DDoShield berjalan dengan benar dan hasilnya valid, kami membandingkannya dengan dua aplikasi jaringan yang sudah umum digunakan, yaitu \textbf{Wireshark} dan \textbf{Snort}. Wireshark sering dijadikan standar acuan (\textit{ground truth}) karena mampu menampilkan isi paket jaringan secara langsung. Namun, menganalisis ratusan ribu paket DDoS di Wireshark secara manual tentu membutuhkan waktu lama dan rawan terjadi kesalahan. Sementara itu, Snort adalah aplikasi pendeteksi penyusupan (IDS) yang cepat, tetapi karena berbasis aturan statis (\textit{signature-based}), ia sering kesulitan mendeteksi serangan tipe baru (\textit{zero-day}) yang belum ada aturannya.
 
 \begin{table*}[!t]
 \vspace{-0.2cm}
@@ -567,8 +548,26 @@ Cara Analisis (Forensik) & Grafik Visual (\textit{TreeSHAP}) & Baca Kode \textit
 \end{tabular}
 \end{table*}
 
+% ============================================================
 
+\subsection{Interpretasi Temuan Utama}
 
+Keberhasilan model XGBoost dalam mendeteksi DDoS dengan F1-Score mendekati 100\% dikarenakan cara kerja algoritma
+\textit{gradient boosting} yang memperbaiki kesalahan tebakan model sebelumnya di setiap pohon keputusan baru~\cite{ref_xgboost2016}.
+Selain itu, teknik regularisasi yang ada pada XGBoost juga sangat membantu mencegah model agar tidak terlalu menghafal
+data latih (\textit{overfitting})~\cite{ref_thakkar2020}. Akurasi yang sangat tinggi ini juga dilaporkan oleh peneliti
+lain pada dataset CIC-IDS2017~\cite{ref_engelen2021} karena kelas data pada dataset ini memang memiliki pola trafik
+yang sangat jelas dibedakan secara statistik.
+
+\subsection{Implikasi Praktis untuk Kampus}
+
+Karena proses pendeteksian XGBoost sangat cepat (0,0051\,ms per flow), aplikasi DDoShield ini dapat diintegrasikan
+langsung pada router kampus untuk menganalisis salinan trafik (\textit{port mirroring}) secara berkala. Aplikasi ini juga
+dilengkapi dengan REST API sehingga bisa dihubungkan ke sistem pemantauan keamanan lain yang sudah ada di kampus.
+
+\subsection{Validasi dan Keunggulan Dibandingkan Aplikasi Lain}
+
+Untuk memastikan program DDoShield berjalan dengan benar dan hasilnya valid, kami membandingkannya dengan dua aplikasi jaringan yang sudah umum digunakan, yaitu \textbf{Wireshark} dan \textbf{Snort}. Wireshark sering dijadikan standar acuan (\textit{ground truth}) karena mampu menampilkan isi paket jaringan secara langsung. Namun, menganalisis ratusan ribu paket DDoS di Wireshark secara manual tentu membutuhkan waktu lama dan rawan terjadi kesalahan. Sementara itu, Snort adalah aplikasi pendeteksi penyusupan (IDS) yang cepat, tetapi karena berbasis aturan statis (\textit{signature-based}), ia sering kesulitan mendeteksi serangan tipe baru (\textit{zero-day}) yang belum ada aturannya.
 DDoShield hadir untuk menutupi kekurangan kedua aplikasi tersebut. Seperti yang ditunjukkan pada Tabel~\ref{tab:comparison_tools}, DDoShield memberikan akurasi pendeteksian yang valid dengan waktu proses yang jauh lebih efisien dibandingkan analisis manual Wireshark. Berbeda dengan Snort yang kaku pada aturan, model XGBoost pada DDoShield berpotensi mengenali varian serangan yang belum memiliki \textit{signature} karena klasifikasinya berbasis pola statistik aliran (\textit{flow statistics}), bukan pencocokan teks paket. Meskipun demikian, kemampuan ini belum diuji secara eksplisit pada serangan \textit{zero-day} dalam penelitian ini. Selain itu, untuk keperluan forensik, DDoShield menyediakan grafik \textit{TreeSHAP} yang langsung menampilkan fitur penyebab serangan. Hal ini memudahkan pengguna untuk melakukan evaluasi tanpa harus menganalisis kode \textit{byte heksadesimal} paket yang rumit seperti di Wireshark. Dengan demikian, program ini tidak hanya akurat secara komputasi, tetapi juga mudah dan praktis digunakan.
 
 
@@ -605,9 +604,9 @@ secara langsung.
 \vspace{-0.2cm}
 \renewcommand{\refname}{Referensi}
 \renewcommand{\bibname}{Referensi}
+\balance
 \bibliographystyle{IEEEtran}
 \scriptsize
-\IEEEtriggeratref{13}
 \bibliography{references}
 
 \end{document}
