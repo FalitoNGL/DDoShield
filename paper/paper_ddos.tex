@@ -357,26 +357,6 @@ Pengujian DDoShield dilakukan pada lingkungan lokal dengan skenario sebagai beri
     \item \textit{Pengujian Performa}: Aplikasi diuji menggunakan tiga ukuran berkas \texttt{.pcap} (100 flow, 1.000 flow, dan 10.000 flow) untuk mengukur latensi pemrosesan, \textit{throughput} model, penggunaan CPU, dan penggunaan memori RAM. Pengukuran dilakukan dalam kondisi server idle dan saat memproses data.
 \end{itemize}
 
-\begin{table*}[t]
-\vspace{-0.2cm}
-\caption{Perbandingan Validasi DDoShield dengan Aplikasi Jaringan Umum}
-\label{tab:comparison_tools}
-\centering
-\small
-\setlength{\tabcolsep}{6pt}
-\begin{tabular}{p{3.5cm}p{4cm}p{4cm}p{4cm}}
-\toprule
-\textbf{Kriteria} & \textbf{DDoShield (Kami)} & \textbf{Wireshark} & \textbf{Snort} \\
-\midrule
-Metode Analisis & Machine Learning & Inspeksi Manual & Aturan Statis (\textit{Signature}) \\
-Validitas Hasil & Sangat Tinggi (Berdasarkan Dataset) & Standar Acuan Utama & Bergantung \textit{Update} Aturan \\
-Deteksi Serangan Baru & Bisa (Melihat Pola Anomali) & Bisa (Tergantung Analis) & Tidak Bisa \\
-Kecepatan Deteksi & Sangat Cepat (0,0051 ms/flow) & Lambat (Manual) & Cepat (Otomatis) \\
-Cara Analisis (Forensik) & Grafik Visual (\textit{TreeSHAP}) & Baca Kode \textit{Hex/Bytes} & Baca Teks Peringatan (\textit{Alert}) \\
-\bottomrule
-\end{tabular}
-\end{table*}
-
 
 % ============================================================
 \section{Hasil dan Analisis}
@@ -566,6 +546,26 @@ dilengkapi dengan REST API sehingga bisa dihubungkan ke sistem pemantauan keaman
 \subsection{Validasi dan Keunggulan Dibandingkan Aplikasi Lain}
 
 Untuk memastikan program DDoShield berjalan dengan benar dan hasilnya valid, kami membandingkannya dengan dua aplikasi jaringan yang sudah umum digunakan, yaitu \textbf{Wireshark} dan \textbf{Snort}. Wireshark sering dijadikan standar acuan (\textit{ground truth}) karena mampu menampilkan isi paket jaringan secara langsung. Namun, menganalisis ratusan ribu paket DDoS di Wireshark secara manual tentu membutuhkan waktu lama dan rawan terjadi kesalahan. Sementara itu, Snort adalah aplikasi pendeteksi penyusupan (IDS) yang cepat, tetapi karena berbasis aturan statis (\textit{signature-based}), ia sering kesulitan mendeteksi serangan tipe baru (\textit{zero-day}) yang belum ada aturannya.
+
+\begin{table*}[!ht]
+\vspace{-0.2cm}
+\caption{Perbandingan Validasi DDoShield dengan Aplikasi Jaringan Umum}
+\label{tab:comparison_tools}
+\centering
+\small
+\setlength{\tabcolsep}{6pt}
+\begin{tabular}{p{3.5cm}p{4cm}p{4cm}p{4cm}}
+\toprule
+\textbf{Kriteria} & \textbf{DDoShield (Kami)} & \textbf{Wireshark} & \textbf{Snort} \\
+\midrule
+Metode Analisis & Machine Learning & Inspeksi Manual & Aturan Statis (\textit{Signature}) \\
+Validitas Hasil & Sangat Tinggi (Berdasarkan Dataset) & Standar Acuan Utama & Bergantung \textit{Update} Aturan \\
+Deteksi Serangan Baru & Bisa (Melihat Pola Anomali) & Bisa (Tergantung Analis) & Tidak Bisa \\
+Kecepatan Deteksi & Sangat Cepat (0,0051 ms/flow) & Lambat (Manual) & Cepat (Otomatis) \\
+Cara Analisis (Forensik) & Grafik Visual (\textit{TreeSHAP}) & Baca Kode \textit{Hex/Bytes} & Baca Teks Peringatan (\textit{Alert}) \\
+\bottomrule
+\end{tabular}
+\end{table*}
 
 
 
