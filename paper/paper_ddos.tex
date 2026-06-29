@@ -357,13 +357,6 @@ Pengujian DDoShield dilakukan pada lingkungan lokal dengan skenario sebagai beri
     \item \textit{Pengujian Performa}: Aplikasi diuji menggunakan tiga ukuran berkas \texttt{.pcap} (100 flow, 1.000 flow, dan 10.000 flow) untuk mengukur latensi pemrosesan, \textit{throughput} model, penggunaan CPU, dan penggunaan memori RAM. Pengukuran dilakukan dalam kondisi server idle dan saat memproses data.
 \end{itemize}
 
-
-
-% ============================================================
-\section{Hasil dan Analisis}
-\label{sec:hasil}
-% ============================================================
-
 \begin{table*}[t]
 \vspace{-0.2cm}
 \caption{Perbandingan Validasi DDoShield dengan Aplikasi Jaringan Umum}
@@ -383,6 +376,12 @@ Cara Analisis (Forensik) & Grafik Visual (\textit{TreeSHAP}) & Baca Kode \textit
 \bottomrule
 \end{tabular}
 \end{table*}
+
+
+% ============================================================
+\section{Hasil dan Analisis}
+\label{sec:hasil}
+% ============================================================
 
 \subsection{Performa XGBoost per Variasi K}
 
@@ -541,6 +540,8 @@ menjadi 430,6\,MB dan beban CPU menjadi 61,0\%. Hasil \textit{False Positive Rat
 bahwa aplikasi ini tidak salah mendeteksi data normal sebagai serangan.
 
 Sebagai bukti validitas fungsional (\textit{functional testing}), kami menguji aplikasi ini secara langsung menggunakan sampel berkas \texttt{.pcap} yang memuat jejak serangan jaringan. DDoShield terbukti mampu mengelompokkan paket-paket mentah menjadi aliran terstruktur (\textit{flows}) secara otomatis dan berhasil melabeli aliran serangan secara tepat. Fitur forensik visual \textit{TreeSHAP} pada dasbor DDoShield juga berhasil menyoroti anomali pada fitur \texttt{Flow Packets/s} dan \texttt{Fwd Packet Length} sebagai pemicu vonis DDoS. Temuan ini konsisten dengan hasil analisis manual yang kami lakukan menggunakan Wireshark pada berkas yang sama. Hal ini menjadi bukti bahwa mekanisme \textit{parsing} PCAP dan inferensi XGBoost dalam aplikasi DDoShield berjalan dengan benar dan dapat diandalkan.
+
+
 
 % ============================================================
 \section{Pembahasan}
