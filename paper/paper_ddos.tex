@@ -522,6 +522,26 @@ bahwa aplikasi ini tidak salah mendeteksi data normal sebagai serangan.
 
 Sebagai bukti validitas fungsional (\textit{functional testing}), kami menguji aplikasi ini secara langsung menggunakan sampel berkas \texttt{.pcap} yang memuat jejak serangan jaringan. DDoShield terbukti mampu mengelompokkan paket-paket mentah menjadi aliran terstruktur (\textit{flows}) secara otomatis dan berhasil melabeli aliran serangan secara tepat. Fitur forensik visual \textit{TreeSHAP} pada dasbor DDoShield juga berhasil menyoroti anomali pada fitur \texttt{Flow Packets/s} dan \texttt{Fwd Packet Length} sebagai pemicu vonis DDoS. Temuan ini konsisten dengan hasil analisis manual yang kami lakukan menggunakan Wireshark pada berkas yang sama. Hal ini menjadi bukti bahwa mekanisme \textit{parsing} PCAP dan inferensi XGBoost dalam aplikasi DDoShield berjalan dengan benar dan dapat diandalkan.
 
+\begin{table*}[t]
+\vspace{-0.2cm}
+\caption{Perbandingan Validasi DDoShield dengan Aplikasi Jaringan Umum}
+\label{tab:comparison_tools}
+\centering
+\small
+\setlength{\tabcolsep}{6pt}
+\begin{tabular}{p{3.5cm}p{4cm}p{4cm}p{4cm}}
+\toprule
+\textbf{Kriteria} & \textbf{DDoShield (Kami)} & \textbf{Wireshark} & \textbf{Snort} \\
+\midrule
+Metode Analisis & Machine Learning & Inspeksi Manual & Aturan Statis (\textit{Signature}) \\
+Validitas Hasil & Sangat Tinggi (Berdasarkan Dataset) & Standar Acuan Utama & Bergantung \textit{Update} Aturan \\
+Deteksi Serangan Baru & Bisa (Melihat Pola Anomali) & Bisa (Tergantung Analis) & Tidak Bisa \\
+Kecepatan Deteksi & Sangat Cepat (0,0051 ms/flow) & Lambat (Manual) & Cepat (Otomatis) \\
+Cara Analisis (Forensik) & Grafik Visual (\textit{TreeSHAP}) & Baca Kode \textit{Hex/Bytes} & Baca Teks Peringatan (\textit{Alert}) \\
+\bottomrule
+\end{tabular}
+\end{table*}
+
 % ============================================================
 \section{Pembahasan}
 \label{sec:diskusi}
@@ -546,25 +566,7 @@ dilengkapi dengan REST API sehingga bisa dihubungkan ke sistem pemantauan keaman
 
 Untuk memastikan program DDoShield berjalan dengan benar dan hasilnya valid, kami membandingkannya dengan dua aplikasi jaringan yang sudah umum digunakan, yaitu \textbf{Wireshark} dan \textbf{Snort}. Wireshark sering dijadikan standar acuan (\textit{ground truth}) karena mampu menampilkan isi paket jaringan secara langsung. Namun, menganalisis ratusan ribu paket DDoS di Wireshark secara manual tentu membutuhkan waktu lama dan rawan terjadi kesalahan. Sementara itu, Snort adalah aplikasi pendeteksi penyusupan (IDS) yang cepat, tetapi karena berbasis aturan statis (\textit{signature-based}), ia sering kesulitan mendeteksi serangan tipe baru (\textit{zero-day}) yang belum ada aturannya.
 
-\begin{table*}[t]
-\vspace{-0.2cm}
-\caption{Perbandingan Validasi DDoShield dengan Aplikasi Jaringan Umum}
-\label{tab:comparison_tools}
-\centering
-\small
-\setlength{\tabcolsep}{6pt}
-\begin{tabular}{p{3.5cm}p{4cm}p{4cm}p{4cm}}
-\toprule
-\textbf{Kriteria} & \textbf{DDoShield (Kami)} & \textbf{Wireshark} & \textbf{Snort} \\
-\midrule
-Metode Analisis & Machine Learning & Inspeksi Manual & Aturan Statis (\textit{Signature}) \\
-Validitas Hasil & Sangat Tinggi (Berdasarkan Dataset) & Standar Acuan Utama & Bergantung \textit{Update} Aturan \\
-Deteksi Serangan Baru & Bisa (Melihat Pola Anomali) & Bisa (Tergantung Analis) & Tidak Bisa \\
-Kecepatan Deteksi & Sangat Cepat (0,0051 ms/flow) & Lambat (Manual) & Cepat (Otomatis) \\
-Cara Analisis (Forensik) & Grafik Visual (\textit{TreeSHAP}) & Baca Kode \textit{Hex/Bytes} & Baca Teks Peringatan (\textit{Alert}) \\
-\bottomrule
-\end{tabular}
-\end{table*}
+
 
 DDoShield hadir untuk menutupi kekurangan kedua aplikasi tersebut. Seperti yang ditunjukkan pada Tabel~\ref{tab:comparison_tools}, DDoShield memberikan akurasi pendeteksian yang valid dengan waktu proses yang jauh lebih efisien dibandingkan analisis manual Wireshark. Berbeda dengan Snort yang kaku pada aturan, model XGBoost pada DDoShield berpotensi mengenali varian serangan yang belum memiliki \textit{signature} karena klasifikasinya berbasis pola statistik aliran (\textit{flow statistics}), bukan pencocokan teks paket. Meskipun demikian, kemampuan ini belum diuji secara eksplisit pada serangan \textit{zero-day} dalam penelitian ini. Selain itu, untuk keperluan forensik, DDoShield menyediakan grafik \textit{TreeSHAP} yang langsung menampilkan fitur penyebab serangan. Hal ini memudahkan pengguna untuk melakukan evaluasi tanpa harus menganalisis kode \textit{byte heksadesimal} paket yang rumit seperti di Wireshark. Dengan demikian, program ini tidak hanya akurat secara komputasi, tetapi juga mudah dan praktis digunakan.
 
