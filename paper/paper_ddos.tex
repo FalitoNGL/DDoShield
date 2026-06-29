@@ -20,6 +20,7 @@
 \usepackage{url}
 \usepackage{hyperref}
 \usepackage{cite}
+\usepackage{float}
 \usepackage[indonesian]{babel}
 
 \hypersetup{
@@ -546,13 +547,13 @@ dilengkapi dengan REST API sehingga bisa dihubungkan ke sistem pemantauan keaman
 
 Untuk memastikan program DDoShield berjalan dengan benar dan hasilnya valid, kami membandingkannya dengan dua aplikasi jaringan yang sudah umum digunakan, yaitu \textbf{Wireshark} dan \textbf{Snort}. Wireshark sering dijadikan standar acuan (\textit{ground truth}) karena mampu menampilkan isi paket jaringan secara langsung. Namun, menganalisis ratusan ribu paket DDoS di Wireshark secara manual tentu membutuhkan waktu lama dan rawan terjadi kesalahan. Sementara itu, Snort adalah aplikasi pendeteksi penyusupan (IDS) yang cepat, tetapi karena berbasis aturan statis (\textit{signature-based}), ia sering kesulitan mendeteksi serangan tipe baru (\textit{zero-day}) yang belum ada aturannya.
 
-\begin{table*}[!ht]
+\begin{table}[H]
 \vspace{-0.2cm}
 \caption{Perbandingan Validasi DDoShield dengan Aplikasi Jaringan Umum}
 \label{tab:comparison_tools}
 \centering
 \small
-\setlength{\tabcolsep}{6pt}
+\resizebox{\columnwidth}{!}{
 \begin{tabular}{p{3.5cm}p{4cm}p{4cm}p{4cm}}
 \toprule
 \textbf{Kriteria} & \textbf{DDoShield (Kami)} & \textbf{Wireshark} & \textbf{Snort} \\
@@ -564,7 +565,8 @@ Kecepatan Deteksi & Sangat Cepat (0,0051 ms/flow) & Lambat (Manual) & Cepat (Oto
 Cara Analisis (Forensik) & Grafik Visual (\textit{TreeSHAP}) & Baca Kode \textit{Hex/Bytes} & Baca Teks Peringatan (\textit{Alert}) \\
 \bottomrule
 \end{tabular}
-\end{table*}
+}
+\end{table}
 
 
 
