@@ -59,28 +59,24 @@
 
 % ── ABSTRAK ──────────────────────────────────────────────────
 \begin{abstract}
-Serangan \textit{Distributed Denial of Service} (DDoS) merupakan salah satu
-ancaman utama bagi keamanan jaringan di lingkungan kampus. Kampus biasanya
-memiliki jaringan yang terbuka karena banyak mahasiswa dan staf yang menghubungkan
-perangkat pribadi mereka secara bebas. Sayangnya, sistem pendeteksi dan analisis forensik serangan DDoS
-yang ringan, akurat, dan mudah digunakan langsung di kampus masih sangat terbatas.
-Oleh karena itu, dalam penelitian ini kami mengembangkan DDoShield, sebuah perangkat lunak
-web untuk deteksi dan forensik jaringan DDoS menggunakan algoritma XGBoost dan seleksi fitur
-\textit{Information Gain} (IG). Eksperimen kami lakukan menggunakan dataset
-standar CIC-IDS2017 (225.745 sampel data dan 78 fitur). Kami menguji performa model
-dengan variasi jumlah fitur $K = \{5, 10, 15, 20, 30, \text{all}\}$ dan membandingkan
-XGBoost dengan algoritma \textit{Random Forest} menggunakan uji statistik McNemar.
-Hasil eksperimen menunjukkan bahwa XGBoost dengan $K=30$ fitur terbaik mampu mencapai
-\textit{F1-Score} sebesar \textbf{99,9977\%} dan nilai AUC-ROC sebesar \textbf{1,0000}.
-Dari 45.149 data uji, model kami hanya salah menebak \textbf{1 sampel} saja.
-Seleksi fitur IG berhasil memangkas waktu pelatihan sebesar 52,7\% (dari 9,38\,s menjadi 4,44\,s)
-tanpa mengurangi akurasi. Selanjutnya, perbandingan antara XGBoost dan \textit{Random Forest}
-pada K=30 menggunakan uji statistik McNemar ($p=0{,}4795$) menunjukkan bahwa akurasi keduanya
-tidak berbeda secara signifikan, namun XGBoost jauh lebih unggul dalam kecepatan komputasi:
-waktu pelatihan 6,9$\times$ lebih cepat dan waktu deteksi per flow
-1,6$\times$ lebih cepat (0,0051\,ms vs.\ 0,0084\,ms/flow). Hasil ini membuktikan bahwa
-kombinasi XGBoost dan seleksi fitur IG sangat cocok dan efisien untuk analisis forensik dan deteksi DDoS di
-jaringan kampus yang memiliki keterbatasan spesifikasi komputer server.
+Serangan \textit{Distributed Denial of Service} (DDoS) merupakan ancaman
+signifikan terhadap keamanan jaringan kampus. Penelitian ini mengembangkan
+DDoShield, sebuah aplikasi web untuk deteksi dan forensik DDoS menggunakan
+algoritma XGBoost dengan seleksi fitur \textit{Information Gain} (IG).
+Eksperimen dilakukan pada dataset CIC-IDS2017 (225.745 sampel, 78 fitur)
+dengan variasi jumlah fitur $K = \{5, 10, 15, 20, 30, \text{all}\}$.
+Hasil pengujian menunjukkan bahwa XGBoost dengan $K=30$ fitur optimal
+mencapai \textit{F1-Score} sebesar \textbf{99,9977\%} dan AUC-ROC
+sebesar \textbf{1,0000}, dengan hanya satu sampel salah klasifikasi dari
+45.149 data uji. Seleksi fitur IG memangkas waktu pelatihan sebesar
+52,7\% tanpa penurunan akurasi. Uji statistik McNemar ($p=0{,}4795$)
+menunjukkan bahwa perbedaan akurasi antara XGBoost dan \textit{Random
+Forest} tidak signifikan secara statistik, namun XGBoost menunjukkan
+keunggulan komputasi yang substansial: waktu pelatihan 4,2$\times$ lebih
+cepat dan latensi inferensi 3,9$\times$ lebih rendah.
+Hasil ini mengindikasikan bahwa kombinasi XGBoost dan seleksi fitur IG
+merupakan pendekatan yang efektif dan efisien untuk deteksi DDoS pada
+jaringan kampus dengan keterbatasan sumber daya komputasi.
 \end{abstract}
 
 \begin{IEEEkeywords}
@@ -93,228 +89,221 @@ learning}
 \section{Pendahuluan}
 % ============================================================
 
-Serangan \textit{Distributed Denial of Service} (DDoS) merupakan salah satu masalah
-keamanan komputer yang paling sering terjadi dan merugikan di dunia. Berdasarkan laporan
-keamanan dari NETSCOUT, jumlah serangan DDoS terus meningkat setiap tahunnya~\cite{ref_netscout2023}.
-Laporan dari Cloudflare juga menyebutkan bahwa serangan DDoS berbasis web (HTTP) naik
-sebesar 65\% dibanding tahun sebelumnya~\cite{ref_cloudflare2023}. Serangan ini bekerja dengan
-cara membanjiri komputer server menggunakan trafik palsu dari banyak komputer penyerang, sehingga
-pengguna asli kesulitan atau bahkan tidak bisa mengakses layanan web tersebut.
+Serangan \textit{Distributed Denial of Service} (DDoS) merupakan salah satu ancaman
+keamanan siber yang paling prevalen dan merugikan secara global~\cite{ref_singh2022}. Laporan
+industri dari NETSCOUT mencatat peningkatan volume serangan DDoS secara konsisten
+setiap tahun~\cite{ref_netscout2023}, sementara Cloudflare melaporkan kenaikan serangan
+DDoS berbasis HTTP sebesar 65\% dibandingkan periode sebelumnya~\cite{ref_cloudflare2023}. Serangan ini
+bekerja dengan membanjiri sumber daya server target menggunakan trafik palsu dari
+sejumlah besar komputer penyerang, sehingga layanan menjadi tidak dapat diakses oleh
+pengguna yang sah.
 
-Di lingkungan kampus, masalah keamanan ini menjadi tantangan tersendiri. Jaringan kampus
-biasanya dirancang terbuka untuk memudahkan mahasiswa, dosen, dan staf mengakses internet
-atau layanan akademik. Selain itu, adanya kebijakan \textit{Bring Your Own Device} (BYOD)
-membuat siapa saja bisa menghubungkan laptop atau ponsel pribadi mereka ke jaringan kampus~\cite{ref_byod}.
-Hal ini membuat jaringan kampus menjadi sasaran yang mudah diserang malware. Di sisi lain,
-tim TI di kampus sering kali memiliki keterbatasan jumlah staf dan spesifikasi perangkat keras
-untuk menangani serangan DDoS yang mendadak~\cite{ref_campus_sec}.
+Di lingkungan kampus, ancaman ini memiliki dimensi tersendiri. Jaringan kampus
+pada umumnya dirancang terbuka untuk mengakomodasi kebutuhan akses mahasiswa, dosen, dan
+staf. Kebijakan \textit{Bring Your Own Device} (BYOD) yang memperbolehkan perangkat
+pribadi terhubung ke jaringan kampus turut memperluas permukaan serangan
+(\textit{attack surface})~\cite{ref_byod}. Kondisi ini menjadikan jaringan kampus rentan
+terhadap serangan DDoS, sementara keterbatasan staf TI dan spesifikasi perangkat keras
+membatasi kapasitas respons terhadap serangan yang terjadi secara mendadak~\cite{ref_campus_sec}.
 
-Selama ini, sistem pendeteksi penyusupan (\textit{Intrusion Detection System} atau IDS)
-yang digunakan masih memiliki beberapa kelemahan. Pertama, IDS tradisional yang memakai sistem
-pencocokan pola (\textit{signature-based}) tidak bisa mendeteksi jenis serangan DDoS baru yang belum
-terdaftar di database mereka (serangan \textit{zero-day})~\cite{ref_ring2019}. Kedua, banyak metode
-\textit{machine learning} yang diusulkan dalam penelitian sebelumnya langsung memakai semua fitur data
-(bisa sampai 78 fitur) tanpa mencari tahu fitur mana yang sebenarnya paling penting~\cite{ref_kasongo2020,ref_ullah2020}.
-Hal ini membuat pemrosesan data menjadi lambat dan berat. Ketiga, jarang ada penelitian akademis
-yang membuat aplikasinya sampai jadi dan bisa langsung dicoba secara nyata oleh pengguna~\cite{ref_abdulganiyu2023}.
+Sistem deteksi intrusi (\textit{Intrusion Detection System}/IDS) yang ada saat ini
+memiliki beberapa keterbatasan fundamental. Pertama, IDS berbasis pencocokan pola
+(\textit{signature-based}) tidak mampu mendeteksi serangan DDoS yang belum terdaftar
+dalam basis data aturannya (\textit{zero-day attacks})~\cite{ref_ring2019}. Kedua, sejumlah
+pendekatan \textit{machine learning} dalam penelitian terdahulu menggunakan seluruh himpunan fitur
+(hingga 78 fitur) tanpa melakukan seleksi fitur secara sistematis, sehingga mengakibatkan
+inefisiensi komputasi~\cite{ref_kasongo2020,ref_ullah2020}. Ketiga, sebagian besar penelitian
+berhenti pada tahap eksperimen dan belum menghasilkan prototipe aplikasi yang dapat
+dioperasikan secara langsung~\cite{ref_abdulganiyu2023}.
 
-Untuk mengatasi masalah tersebut, dalam penelitian ini kami bertujuan untuk:
-(1)~mencari tahu berapa jumlah fitur terbaik (dari variasi $K = \{5, 10, 15, 20, 30, \text{all}\}$)
+Untuk mengatasi kesenjangan tersebut, penelitian ini bertujuan untuk:
+(1)~mengidentifikasi jumlah fitur optimal dari variasi $K = \{5, 10, 15, 20, 30, \text{all}\}$
 menggunakan metode seleksi fitur \textit{Information Gain}; (2)~membandingkan performa algoritma
-XGBoost dan \textit{Random Forest} pada jumlah fitur terbaik tersebut; (3)~membuat aplikasi web
-DDoShield untuk deteksi dan forensik jaringan yang bisa menganalisis file trafik \texttt{.pcap} secara langsung; dan (4)~menguji
-performa aplikasi tersebut secara riil.
+XGBoost dan \textit{Random Forest} pada jumlah fitur optimal tersebut; (3)~mengembangkan aplikasi web
+DDoShield untuk deteksi dan forensik jaringan yang mampu menganalisis berkas \texttt{.pcap} secara langsung; dan (4)~mengevaluasi
+performa aplikasi tersebut pada lingkungan operasional.
 
-Penelitian ini diharapkan dapat memberikan kontribusi berupa: (1)~analisis sistematis pemilihan
-fitur terbaik untuk deteksi dan forensik DDoS; (2)~perbandingan performa XGBoost dan \textit{Random Forest} yang
-diperkuat dengan uji statistik McNemar; (3)~\textit{software} deteksi dan forensik jaringan (DDoShield) yang siap pakai;
-dan (4)~hasil pengukuran kinerja sistem yang nyata pada lingkungan lokal.
+Kontribusi utama penelitian ini adalah sebagai berikut:
+\begin{enumerate}
+  \item Analisis sistematis pengaruh seleksi fitur berbasis IG terhadap performa deteksi DDoS pada enam variasi nilai $K$, yang menunjukkan bahwa pengurangan 61,5\% fitur tidak menurunkan akurasi.
+  \item Perbandingan komprehensif antara XGBoost dan \textit{Random Forest} yang diperkuat dengan validasi 10 iterasi dan uji statistik McNemar.
+  \item Implementasi prototipe aplikasi web DDoShield yang mengintegrasikan deteksi hibrida (heuristik dan \textit{machine learning}) dengan kemampuan forensik berbasis TreeSHAP~\cite{ref_interp}.
+  \item Evaluasi performa sistem secara menyeluruh meliputi latensi, \textit{throughput}, dan penggunaan sumber daya pada lingkungan server lokal.
+\end{enumerate}
 
-Sisa paper ini disusun sebagai berikut: Seksi~\ref{sec:tinjpus} menjelaskan tinjauan pustaka;
-Seksi~\ref{sec:metode} membahas metode penelitian kami; Seksi~\ref{sec:hasil} memaparkan hasil
-eksperimen dan analisis; Seksi~\ref{sec:diskusi} membahas temuan penelitian; dan Seksi~\ref{sec:kesimpulan}
-menyimpulkan hasil penelitian kami.
+Sisa paper ini disusun sebagai berikut: Seksi~\ref{sec:tinjpus} memaparkan tinjauan pustaka;
+Seksi~\ref{sec:metode} menjelaskan metodologi penelitian; Seksi~\ref{sec:hasil} menyajikan hasil
+eksperimen dan analisis; Seksi~\ref{sec:diskusi} membahas temuan dan implikasinya; dan Seksi~\ref{sec:kesimpulan}
+merangkum kesimpulan penelitian.
 
 % ============================================================
 \section{Tinjauan Pustaka}
 \label{sec:tinjpus}
 % ============================================================
 
-\subsection{Karakteristik Serangan DDoS pada Jaringan Kampus}
+\subsection{Karakteristik Serangan DDoS}
 
-Serangan DDoS bekerja dengan cara menghabiskan kapasitas \textit{bandwidth} jaringan atau membebani
-sumber daya komputer server target menggunakan trafik yang sangat besar~\cite{ref_chandola2009}. Trafik
-ini biasanya dikirim secara bersamaan oleh banyak komputer yang telah terinfeksi \textit{malware}
-(biasa disebut \textit{botnet})~\cite{ref_ring2019}. Secara umum, serangan DDoS dibagi menjadi tiga
-kelompok utama: (1)~\textit{volumetric attacks} yang bertujuan menghabiskan \textit{bandwidth} internet;
-(2)~\textit{protocol attacks} yang memanfaatkan celah pada aturan protokol komunikasi data; dan
-(3)~\textit{application layer attacks} yang menyerang langsung aplikasi atau layanan web server yang sedang berjalan.
+Serangan DDoS bekerja dengan menghabiskan kapasitas \textit{bandwidth} jaringan atau membebani
+sumber daya server target menggunakan volume trafik yang sangat besar~\cite{ref_chandola2009}. Trafik
+serangan umumnya dihasilkan secara simultan oleh jaringan komputer yang telah terinfeksi \textit{malware},
+yang dikenal sebagai \textit{botnet}~\cite{ref_ring2019}. Secara taksonomi, serangan DDoS diklasifikasikan
+menjadi tiga kategori: (1)~\textit{volumetric attacks} yang bertujuan menjenuhkan \textit{bandwidth};
+(2)~\textit{protocol attacks} yang mengeksploitasi kelemahan protokol komunikasi; dan
+(3)~\textit{application layer attacks} yang menargetkan layanan aplikasi secara langsung~\cite{ref_singh2022}.
 
 \subsection{Evolusi Sistem Deteksi Intrusi}
 
-Untuk mendeteksi serangan ini, sistem pendeteksi penyusupan (IDS) berbasis \textit{machine learning} (ML)
-menawarkan solusi yang lebih pintar. Dibandingkan dengan metode biasa yang kaku, metode ML bisa mengenali
-tanda-tanda aneh pada trafik jaringan secara otomatis tanpa perlu memiliki daftar tanda serangan (\textit{signature})
-terlebih dahulu~\cite{ref_chandola2009}. Beberapa algoritma ML yang sering digunakan untuk tugas ini
-antara lain \textit{Decision Tree}~\cite{ref_dt_ids}, \textit{Random Forest}~\cite{ref_ullah2020},
+IDS berbasis \textit{machine learning} (ML) menawarkan pendekatan yang lebih adaptif dibandingkan
+metode \textit{signature-based} konvensional, karena mampu mengidentifikasi anomali pada pola trafik
+tanpa memerlukan basis data aturan yang telah didefinisikan sebelumnya~\cite{ref_chandola2009}.
+Berbagai algoritma ML telah dievaluasi untuk deteksi intrusi, antara lain
+\textit{Decision Tree}~\cite{ref_dt_ids}, \textit{Random Forest}~\cite{ref_ullah2020},
 \textit{Convolutional Neural Network} (CNN)~\cite{ref_cnn_ids}, \textit{Long Short-Term Memory} (LSTM)~\cite{ref_lstm_ids},
-dan XGBoost~\cite{ref_thakkar2020}.
+dan XGBoost~\cite{ref_thakkar2020}. Studi survei terbaru oleh Ferrag et al.~\cite{ref_ferrag2022}
+mengonfirmasi bahwa metode \textit{ensemble} berbasis pohon keputusan, termasuk XGBoost, secara
+konsisten menunjukkan performa superior pada dataset benchmark IDS.
 
 \subsection{XGBoost untuk Deteksi Intrusi}
 
-XGBoost (\textit{eXtreme Gradient Boosting}) adalah algoritma pembelajaran mesin berbasis pohon keputusan (\textit{decision tree}) yang sangat populer karena kecepatan dan akurasinya yang tinggi~\cite{ref_xgboost2016}. Algoritma ini bekerja dengan cara membangun banyak pohon keputusan secara berurutan, di mana setiap pohon baru bertugas memperbaiki kesalahan tebakan dari pohon-pohon sebelumnya. Keunggulan utama XGBoost adalah kemampuannya untuk mencegah model agar tidak terlalu menghafal data secara berlebihan (\textit{overfitting}) menggunakan fungsi pembatas (\textit{regularization}) bawaan, sehingga performa model tetap stabil saat menguji data baru~\cite{ref_xgboost2016}.
+XGBoost (\textit{eXtreme Gradient Boosting}) merupakan algoritma \textit{ensemble learning} berbasis
+\textit{gradient-boosted decision trees} yang dikenal karena kecepatan dan akurasi prediksi
+yang superior pada berbagai tugas klasifikasi~\cite{ref_xgboost2016}. Algoritma ini membangun
+pohon keputusan secara sekuensial, di mana setiap pohon baru bertugas meminimalkan
+\textit{residual loss} dari estimator sebelumnya. Keunggulan utama XGBoost terletak pada mekanisme
+regularisasi bawaan ($L_1$ dan $L_2$) yang secara efektif mencegah \textit{overfitting}, sehingga
+generalisasi model pada data baru tetap terjaga~\cite{ref_xgboost2016}.
 
 \subsection{Information Gain untuk Seleksi Fitur}
 
-\textit{Information Gain} (IG) adalah metode yang kami gunakan untuk mengukur seberapa penting atau berharganya informasi dari suatu fitur dalam menentukan apakah suatu lalu lintas jaringan merupakan serangan DDoS atau trafik normal (\textit{BENIGN})~\cite{ref_shannon1948}. Konsep dasar IG berfokus pada tingkat ketidakpastian data (\textit{entropy}). Fitur yang memiliki nilai IG tinggi berarti mengandung informasi yang sangat kuat untuk membedakan antara trafik normal dan serangan. Sebaliknya, fitur dengan nilai IG mendekati nol dianggap tidak penting. Dengan menggunakan metode seleksi fitur berbasis IG ini, kami dapat membuang fitur-fitur yang tidak relevan sehingga model bisa bekerja jauh lebih cepat dan ringan saat dijalankan di server~\cite{ref_guyon2003}.
+\textit{Information Gain} (IG) mengukur kontribusi informatif suatu fitur dalam membedakan kelas
+target berdasarkan konsep entropi dari teori informasi Shannon~\cite{ref_shannon1948}. Fitur
+dengan nilai IG tinggi memiliki daya diskriminasi yang kuat terhadap kelas DDoS dan BENIGN,
+sementara fitur dengan IG mendekati nol dianggap tidak informatif. Metode seleksi fitur
+berbasis IG memungkinkan eliminasi fitur-fitur yang redundan, sehingga kompleksitas
+komputasi dapat direduksi tanpa mengorbankan akurasi klasifikasi~\cite{ref_guyon2003}.
 
-\subsection{Dataset CIC-IDS2017}
-
-Dalam penelitian ini, kami menggunakan dataset CIC-IDS2017 yang dibuat oleh \textit{Canadian Institute for
-Cybersecurity} (CIC)~\cite{ref_sharafaldin2018}. Dataset ini berisi rekaman trafik jaringan normal dan berbagai
-jenis serangan selama lima hari kerja. Rekaman trafik tersebut kemudian diproses menggunakan program CICFlowMeter
-sehingga menghasilkan 78 fitur berbasis flow. Kami menggunakan file data khusus bernama
-\texttt{\small Friday-\allowbreak WorkingHours-\allowbreak Afternoon-\allowbreak DDos.\allowbreak pcap\_ISCX.csv} yang berisi 225.745 baris data, dengan rincian
-128.027 data serangan DDoS (56,7\%) dan 97.718 data normal (BENIGN) (43,3\%).
-
-\begin{table}[htbp]
+\begin{table*}[t]
 \vspace{-0.2cm}
-\caption{Perbandingan Penelitian Terkait}
+\caption{Perbandingan Penelitian Terkait Deteksi Intrusi Berbasis ML}
 \label{tab:related_work}
 \centering
 \small
-\begin{tabular}{p{1.0cm}p{1.5cm}p{2.2cm}p{1.0cm}p{0.8cm}}
+\setlength{\tabcolsep}{6pt}
+\begin{tabular}{p{1.5cm}p{2.0cm}p{2.5cm}p{2.5cm}p{1.8cm}p{1.5cm}p{1.5cm}}
 \toprule
-\textbf{Ref.} & \textbf{Dataset} & \textbf{Algoritma} &
-\textbf{Acc.} & \textbf{K} \\
+\textbf{Ref.} & \textbf{Dataset} & \textbf{Algoritma} & \textbf{Metode Deteksi} &
+\textbf{Akurasi} & \textbf{K (Fitur)} & \textbf{Aplikasi} \\
 \midrule
-\cite{ref_thakkar2020}     & CIC-IDS & XGBoost+Corr  & 99,5\% & all \\
-\cite{ref_kasongo2020}     & UNSW    & XGBoost+IG    & 99,2\% & 10 \\
-\cite{ref_ullah2020}       & CIC-IDS & RF            & 98,7\% & 20 \\
-\cite{ref_cnn_ids}         & CIC-IDS & CNN           & 99,1\% & all \\
-\cite{ref_lstm_ids}        & CICIDS  & LSTM          & 98,3\% & all \\
-\cite{ref_abdulganiyu2023} & Review  & Multi-algo    & --     & -- \\
-\textbf{Kami}              & CIC-IDS & \textbf{XGB+IG} & \textbf{$\approx$100\%} & \textbf{30} \\
+\cite{ref_thakkar2020}     & CIC-IDS2017 & XGBoost+Corr  & Flow-based & 99,5\% & all (78) & Tidak \\
+\cite{ref_kasongo2020}     & UNSW-NB15   & XGBoost+IG    & Flow-based & 99,2\% & 10 & Tidak \\
+\cite{ref_ullah2020}       & CIC-IDS2017 & Random Forest & Flow-based & 98,7\% & 20 & Tidak \\
+\cite{ref_cnn_ids}         & CIC-IDS2017 & CNN           & Packet-based & 99,1\% & all & Tidak \\
+\cite{ref_lstm_ids}        & CIC-IDS2017 & LSTM          & Packet-based & 98,3\% & all & Tidak \\
+\cite{ref_leevy2020}       & CIC-IDS2017 & Multi-algo    & Flow-based & -- & -- & Tidak \\
+\cite{ref_abdulganiyu2023} & Review      & Multi-algo    & -- & -- & -- & Tidak \\
+\textbf{Kami}              & CIC-IDS2017 & \textbf{XGB+IG} & \textbf{Flow-based} & \textbf{$\approx$100\%} & \textbf{30} & \textbf{Ya} \\
 \bottomrule
 \end{tabular}
-\end{table}
+\end{table*}
+
+Tabel~\ref{tab:related_work} merangkum perbandingan penelitian terkait. Analisis terhadap studi-studi tersebut mengungkapkan dua kesenjangan riset: (1) mayoritas penelitian menggunakan seluruh fitur tanpa eksplorasi sistematis terhadap jumlah fitur optimal, dan (2) tidak menyediakan prototipe aplikasi yang siap dioperasikan. Penelitian ini bertujuan mengisi kedua kesenjangan tersebut.
 
 % ============================================================
 \section{Metodologi}
 \label{sec:metode}
 % ============================================================
 
-Penelitian ini merupakan eksperimen komputasional yang bertujuan membangun model deteksi DDoS berbasis \textit{machine learning} dan mengimplementasikannya ke dalam prototipe aplikasi web forensik. Secara keseluruhan, penelitian dilakukan melalui sembilan tahapan yang disusun secara kronologis, yaitu: (1) pemilihan dan persiapan dataset, (2) pembersihan data (\textit{preprocessing}), (3) pembagian data latih dan data uji, (4) seleksi fitur menggunakan Information Gain, (5) pencarian parameter optimal (\textit{hyperparameter tuning}) XGBoost, (6) pelatihan dan evaluasi model XGBoost, (7) pelatihan dan evaluasi model pembanding Random Forest, (8) perbandingan performa kedua model menggunakan uji statistik McNemar, dan (9) implementasi model terbaik ke dalam aplikasi web DDoShield serta pengujian fungsional dan performa sistem. Seluruh proses komputasi dijalankan pada komputer berspesifikasi Intel Core i7 dengan RAM 16GB dan sistem operasi Windows. Lingkungan perangkat lunak yang digunakan adalah Python~3.14, Scikit-learn~1.8, XGBoost~3.2, dan Scapy~2.7. Seluruh pembagian data dan pengacakan dalam eksperimen ini menggunakan \texttt{random\_state}~=~42 untuk menjamin reprodusibilitas hasil.
+Penelitian ini merupakan eksperimen komputasional yang bertujuan membangun model deteksi DDoS berbasis \textit{machine learning} dan mengimplementasikannya ke dalam prototipe aplikasi web forensik. Secara keseluruhan, metodologi dilaksanakan melalui sembilan tahapan: (1) persiapan dataset, (2) \textit{preprocessing}, (3) pembagian data, (4) seleksi fitur, (5) \textit{hyperparameter tuning} XGBoost, (6) pelatihan dan evaluasi XGBoost, (7) pelatihan dan evaluasi \textit{Random Forest}, (8) uji statistik McNemar, dan (9) implementasi dan pengujian aplikasi DDoShield. Seluruh komputasi dilakukan pada komputer berspesifikasi Intel Core i7 dengan RAM 16\,GB menggunakan Python~3.14, Scikit-learn~1.8, XGBoost~3.2, dan Scapy~2.7. Reprodusibilitas dijamin melalui penggunaan \texttt{random\_state}~=~42.
 
 \subsection{Dataset Penelitian}
 
-Dataset yang digunakan dalam penelitian ini adalah CIC-IDS2017 yang dikembangkan oleh \textit{Canadian Institute for Cybersecurity} (CIC)~\cite{ref_sharafaldin2018}. Dataset ini dipilih karena merupakan salah satu dataset standar yang paling banyak digunakan dalam penelitian deteksi intrusi, memiliki variasi serangan yang lengkap, dan menyediakan data \textit{flow-based} yang sesuai dengan pendekatan yang kami gunakan. Secara spesifik, penelitian ini menggunakan berkas \texttt{\small Friday-\allowbreak WorkingHours-\allowbreak Afternoon-\allowbreak DDos.\allowbreak pcap\_ISCX.csv} yang berisi rekaman lalu lintas jaringan pada hari Jumat sore yang didominasi oleh serangan DDoS. Berkas ini terdiri dari 225.745 sampel data dengan rincian 128.027 sampel serangan DDoS (56,7\%) dan 97.718 sampel lalu lintas normal berlabel BENIGN (43,3\%). Setiap sampel memiliki 78 fitur numerik hasil ekstraksi menggunakan CICFlowMeter, yang mencakup statistik aliran seperti durasi, jumlah paket, panjang paket, dan berbagai metrik turunan lainnya.
+Dataset yang digunakan adalah CIC-IDS2017, dikembangkan oleh \textit{Canadian Institute for Cybersecurity}~\cite{ref_sharafaldin2018}. Dataset ini merupakan salah satu \textit{benchmark} yang paling banyak digunakan dalam penelitian deteksi intrusi~\cite{ref_leevy2020}, menyediakan data \textit{flow-based} yang sesuai dengan pendekatan yang digunakan dalam penelitian ini. Secara spesifik, berkas \texttt{\small Friday-\allowbreak WorkingHours-\allowbreak Afternoon-\allowbreak DDos.\allowbreak pcap\_ISCX.csv} digunakan, yang berisi 225.745 sampel dengan rincian 128.027 sampel serangan DDoS (56,7\%) dan 97.718 sampel lalu lintas normal berlabel BENIGN (43,3\%). Setiap sampel memiliki 78 fitur numerik hasil ekstraksi CICFlowMeter, meliputi statistik aliran seperti durasi, jumlah paket, panjang paket, dan berbagai metrik turunan lainnya. Meskipun dataset ini merupakan standar yang banyak digunakan, perlu dicatat bahwa beberapa keterbatasan telah diidentifikasi oleh Engelen et al.~\cite{ref_engelen2021}, termasuk adanya anomali pada distribusi kelas tertentu.
 
 \subsection{Preprocessing Data}
 
-Tahap pembersihan data (\textit{preprocessing}) dilakukan melalui serangkaian langkah yang teratur untuk memastikan kualitas data sebelum digunakan dalam pelatihan model. Langkah-langkah tersebut adalah sebagai berikut:
+Tahap \textit{preprocessing} dilakukan melalui serangkaian langkah untuk memastikan kualitas data:
 
 \begin{enumerate}
-    \item \textit{Filtering Label}: Data difilter untuk hanya menyisakan baris dengan label DDoS dan BENIGN, karena kedua kelas inilah yang menjadi fokus klasifikasi biner dalam penelitian ini. Kelas lain seperti serangan selain DDoS tidak digunakan agar model yang dihasilkan bersifat spesifik untuk deteksi DDoS.
+    \item \textit{Filtering Label}: Data difilter untuk menyisakan hanya sampel dengan label DDoS dan BENIGN, sesuai dengan fokus klasifikasi biner dalam penelitian ini.
 
-    \item \textit{Penanganan Nilai Tak Hingga}: Nilai tak hingga ($\pm\infty$) yang muncul akibat pembagian dengan nol pada proses ekstraksi CICFlowMeter diubah menjadi nilai kosong (\textit{Not a Number} atau NaN) untuk memudahkan proses penanganan data kosong selanjutnya.
+    \item \textit{Penanganan Nilai Tak Hingga}: Nilai $\pm\infty$ yang dihasilkan oleh pembagian dengan nol pada proses ekstraksi CICFlowMeter dikonversi menjadi NaN.
 
-    \item \textit{Penghapusan Fitur dengan Banyak Data Kosong}: Fitur yang memiliki proporsi data kosong lebih dari 50\% dihapus dari dataset. Hal ini dilakukan karena fitur dengan banyak nilai hilang dianggap tidak reliabel dan dapat menurunkan kualitas model jika dipertahankan.
+    \item \textit{Penghapusan Fitur}: Fitur dengan proporsi nilai kosong melebihi 50\% dieliminasi dari dataset karena dianggap tidak reliabel.
 
-    \item \textit{Imputasi Data Kosong}: Nilai kosong yang tersisa pada fitur-fitur lainnya diisi menggunakan nilai median dari kolom fitur tersebut. Median dipilih karena statistik ini lebih tangguh (\textit{robust}) terhadap anomali ekstrem dibandingkan rata-rata, sehingga lebih cocok untuk data lalu lintas jaringan yang sering mengandung nilai pencilan (\textit{outliers}).
+    \item \textit{Imputasi Data}: Nilai kosong pada fitur yang tersisa diisi menggunakan nilai median. Statistik median dipilih karena ketahanannya (\textit{robustness}) terhadap nilai pencilan (\textit{outliers}), sebagaimana direkomendasikan untuk data jaringan yang sering mengandung anomali ekstrem~\cite{ref_lin2015}.
 
-    \item \textit{Normalisasi Data}: Seluruh fitur numerik dinormalisasi menggunakan \texttt{StandardScaler} dari pustaka Scikit-learn. Proses ini mengubah setiap fitur sehingga memiliki nilai rata-rata 0 dan standar deviasi 1, yang bertujuan menyamakan skala antar fitur agar tidak ada fitur dengan rentang nilai besar yang mendominasi proses pembelajaran model.
+    \item \textit{Normalisasi}: Seluruh fitur numerik dinormalisasi menggunakan \texttt{StandardScaler} (Scikit-learn) sehingga memiliki rata-rata 0 dan standar deviasi 1.
 \end{enumerate}
 
 \subsection{Pembagian Data}
 
-Setelah tahap \textit{preprocessing} selesai, dataset dibagi menjadi dua subset, yaitu data latih (\textit{training set}) dan data uji (\textit{testing set}), dengan rasio 80:20. Pembagian dilakukan menggunakan metode \textit{stratified random sampling} untuk memastikan proporsi kelas DDoS dan BENIGN pada kedua subset tetap seimbang dan merepresentasikan distribusi kelas pada dataset asli. Dengan demikian, data latih berjumlah 180.596 sampel dan data uji berjumlah 45.149 sampel.
+Dataset dibagi menjadi data latih dan data uji dengan rasio 80:20 menggunakan \textit{stratified random sampling} untuk mempertahankan proporsi kelas. Data latih berjumlah 180.596 sampel dan data uji 45.149 sampel.
 
-Perlu dicatat bahwa meskipun pembagian acak pada data deret waktu (\textit{time-series}) berpotensi menimbulkan kebocoran data (\textit{data leakage}) karena urutan waktu tidak diperhatikan, protokol ini tetap kami pertahankan. Keputusan ini diambil agar performa model dapat dibandingkan secara setara dengan penelitian-penelitian terdahulu yang umumnya menggunakan metode serupa pada dataset CIC-IDS2017~\cite{ref_kasongo2020, ref_ullah2020, ref_thakkar2020}.
+Meskipun pembagian acak pada data \textit{time-series} berpotensi menimbulkan \textit{data leakage}, protokol ini dipertahankan agar performa dapat dibandingkan secara setara dengan penelitian terdahulu yang menggunakan metode serupa pada CIC-IDS2017~\cite{ref_kasongo2020, ref_ullah2020, ref_thakkar2020}.
 
-Untuk menguji stabilitas varians hasil eksperimen, seluruh proses pembagian data, pelatihan, dan evaluasi model diulang sebanyak 10 kali menggunakan 10 \textit{random seed} yang berbeda (\textit{10x repeated random sub-sampling validation}). Hasil performa yang dilaporkan pada penelitian ini merupakan rata-rata dan simpangan baku ($\mu \pm \sigma$) dari 10 iterasi tersebut.
+Untuk menguji stabilitas hasil, seluruh proses diulang sebanyak 10 kali menggunakan 10 \textit{random seed} yang berbeda (\textit{10x repeated random sub-sampling validation}). Performa yang dilaporkan merupakan rata-rata dan simpangan baku ($\mu \pm \sigma$) dari 10 iterasi tersebut.
 
 \subsection{Seleksi Fitur Menggunakan Information Gain}
 
-Seleksi fitur dilakukan menggunakan metode Information Gain (IG) yang bertujuan mengukur seberapa penting kontribusi setiap fitur dalam membedakan kelas DDoS dan BENIGN. Secara matematis, IG mengukur pengurangan entropi (ketidakpastian) ketika suatu fitur diketahui nilainya, sesuai dengan teori informasi yang dikemukakan oleh Shannon~\cite{ref_shannon1948}. Fitur dengan nilai IG tinggi memiliki kemampuan diskriminasi yang kuat, sedangkan fitur dengan nilai IG mendekati nol dianggap tidak informatif dan dapat dibuang~\cite{ref_guyon2003}.
+Seleksi fitur dilakukan menggunakan IG untuk mengukur kontribusi setiap fitur dalam membedakan kelas DDoS dan BENIGN. Secara matematis, IG mengukur reduksi entropi ketika suatu fitur diketahui nilainya~\cite{ref_shannon1948}. Fitur dengan IG tinggi memiliki daya diskriminasi yang kuat, sedangkan fitur dengan IG mendekati nol dianggap tidak informatif~\cite{ref_guyon2003}.
 
-Perhitungan skor IG dilakukan menggunakan fungsi \texttt{mutual\_info\_classif} dari pustaka Scikit-learn, yang secara matematis menghitung \textit{Mutual Information} antara setiap fitur dan target kelas. Setelah skor IG diperoleh untuk seluruh 78 fitur, pemilihan fitur terbaik dilakukan menggunakan fungsi \texttt{SelectKBest} dengan variasi jumlah fitur $K = \{5, 10, 15, 20, 30, \text{all (78)}\}$. Variasi ini diterapkan untuk mengidentifikasi jumlah fitur optimal yang memberikan kinerja terbaik dengan kompleksitas komputasi paling rendah. Proses seleksi fitur dilakukan setelah data dibagi menjadi data latih dan data uji, di mana perhitungan IG hanya dilakukan pada data latih untuk menghindari kebocoran informasi dari data uji.
+Perhitungan skor IG dilakukan menggunakan fungsi \texttt{mutual\_info\_classif} (Scikit-learn). Pemilihan fitur optimal dilakukan melalui \texttt{SelectKBest} dengan variasi $K = \{5, 10, 15, 20, 30, \text{all (78)}\}$. Rentang nilai $K$ ini dipilih untuk mencakup spektrum dari jumlah fitur yang sangat terbatas (5) hingga himpunan penuh (78), dengan interval yang memungkinkan visualisasi kurva performa yang representatif. Seleksi fitur dilakukan hanya pada data latih untuk menghindari kebocoran informasi.
 
 \subsection{Hyperparameter Tuning XGBoost}
 
-Untuk memperoleh model XGBoost dengan performa optimal, dilakukan pencarian parameter terbaik (\textit{hyperparameter tuning}) menggunakan metode \texttt{RandomizedSearchCV} dari pustaka Scikit-learn. Metode ini dipilih karena lebih efisien dibandingkan \texttt{GridSearchCV} untuk ruang pencarian yang luas, karena hanya melakukan pencarian pada sejumlah sampel parameter yang dipilih secara acak.
+Pencarian parameter optimal dilakukan menggunakan \texttt{RandomizedSearchCV} (Scikit-learn) dengan 20 iterasi dan 5-\textit{fold cross-validation}, menggunakan F1-Score (\textit{macro average}) sebagai metrik evaluasi.
 
-Proses tuning dilakukan dengan ketentuan sebagai berikut:
-\begin{itemize}
-    \item Jumlah percobaan: 20 kali iterasi
-    \item Metode validasi: 5-\textit{fold cross-validation}
-    \item Metrik evaluasi: F1-Score (\textit{macro average})
-    \item Ruang parameter yang dicari meliputi: \texttt{n\_estimators} (jumlah pohon keputusan), \texttt{max\_depth} (kedalaman pohon), \texttt{learning\_rate} (laju pembelajaran), \texttt{subsample} (proporsi sampel yang digunakan per pohon), \texttt{colsample\_bytree} (proporsi fitur yang digunakan per pohon), dan \texttt{scale\_pos\_weight} (penyeimbang bobot kelas).
-\end{itemize}
-
-Parameter terbaik yang diperoleh dari proses tuning adalah: $\texttt{n\_estimators} = 300$, $\texttt{max\_depth} = 4$, $\texttt{learning\_rate} = 0{,}2$, $\texttt{subsample} = 0{,}7$, $\texttt{colsample\_bytree} = 0{,}8$, dan $\texttt{scale\_pos\_weight} = 0{,}7633$. Parameter-parameter ini kemudian digunakan untuk melatih model XGBoost final pada seluruh data latih.
+Ruang parameter yang dieksplorasi meliputi: \texttt{n\_estimators}, \texttt{max\_depth}, \texttt{learning\_rate}, \texttt{subsample}, \texttt{colsample\_bytree}, dan \texttt{scale\_pos\_weight}. Konfigurasi optimal yang diperoleh adalah: $\texttt{n\_estimators} = 300$, $\texttt{max\_depth} = 4$, $\texttt{learning\_rate} = 0{,}2$, $\texttt{subsample} = 0{,}7$, $\texttt{colsample\_bytree} = 0{,}8$, dan $\texttt{scale\_pos\_weight} = 0{,}7633$.
 
 \subsection{Pelatihan dan Evaluasi Model XGBoost}
 
-Model XGBoost dilatih menggunakan konfigurasi parameter terbaik yang diperoleh dari tahap \textit{tuning} pada data latih yang telah melalui seleksi fitur untuk setiap nilai $K$. Proses ini menghasilkan enam model XGBoost yang berbeda, masing-masing sesuai dengan jumlah fitur $K = \{5, 10, 15, 20, 30, \text{all}\}$. Setiap model dievaluasi pada data uji yang sama untuk mengukur kinerjanya secara objektif.
-
-Metrik evaluasi yang digunakan meliputi:
+Model XGBoost dilatih menggunakan konfigurasi optimal untuk setiap nilai $K$, menghasilkan enam model yang dievaluasi pada data uji yang sama. Metrik evaluasi yang digunakan meliputi:
 \begin{itemize}
-    \item \textit{Akurasi (Accuracy)}: Persentase prediksi benar dari keseluruhan data uji.
-    \item \textit{Presisi (Precision)}: Proporsi prediksi DDoS yang benar terhadap seluruh prediksi DDoS, mengukur kemampuan model dalam meminimalkan \textit{false positive}.
-    \item \textit{Recall}: Proporsi data DDoS yang berhasil dideteksi dengan benar, mengukur kemampuan model dalam meminimalkan \textit{false negative}.
-    \item \textit{F1-Score}: Rata-rata harmonik dari Presisi dan \textit{Recall}, yang menjadi metrik acuan utama karena memberikan evaluasi yang lebih komprehensif dibandingkan akurasi saja, terutama pada data dengan ketidakseimbangan kelas.
-    \item \textit{False Positive Rate (FPR)}: Persentase data normal yang salah terdeteksi sebagai DDoS.
-    \item \textit{AUC-ROC}: Area di bawah kurva ROC yang mengukur kemampuan model dalam membedakan kedua kelas secara keseluruhan.
-    \item \textit{Waktu Pelatihan (Training Time)}: Waktu yang dibutuhkan untuk melatih model, diukur dalam detik.
-    \item \textit{Waktu Inferensi (Inference Time)}: Waktu yang dibutuhkan untuk memprediksi satu aliran data, diukur dalam milidetik per \textit{flow}.
+    \item \textit{Accuracy}: Persentase prediksi benar dari keseluruhan data uji.
+    \item \textit{Precision}: Proporsi prediksi DDoS yang benar, mengukur kemampuan meminimalkan \textit{false positive}.
+    \item \textit{Recall}: Proporsi data DDoS yang berhasil dideteksi, mengukur kemampuan meminimalkan \textit{false negative}.
+    \item \textit{F1-Score}: Rata-rata harmonik Precision dan Recall, menjadi metrik utama.
+    \item \textit{AUC-ROC}: Area di bawah kurva ROC.
+    \item \textit{Training Time} dan \textit{Inference Time}: Efisiensi komputasi.
 \end{itemize}
 
 \subsection{Model Pembanding Random Forest}
 
-Sebagai pembanding, digunakan algoritma Random Forest (RF) yang merupakan salah satu metode \textit{ensemble learning} berbasis pohon keputusan yang populer dalam deteksi intrusi~\cite{ref_ullah2020}. Random Forest dilatih menggunakan data dan fitur yang sama dengan XGBoost (pada $K=30$ dan $K=\text{all}$) agar perbandingan performa bersifat adil.
-
-Konfigurasi Random Forest yang digunakan adalah sebagai berikut:
-\begin{itemize}
-    \item $\texttt{n\_estimators} = 200$ (jumlah pohon keputusan)
-    \item $\texttt{max\_features} = \texttt{'sqrt'}$ (jumlah fitur yang dipertimbangkan untuk setiap pembagian pohon)
-    \item $\texttt{class\_weight} = \texttt{'balanced'}$ (menyeimbangkan bobot kelas secara otomatis)
-\end{itemize}
-Parameter-parameter ini dipilih berdasarkan konfigurasi standar yang umum digunakan dalam penelitian deteksi intrusi~\cite{ref_ullah2020}, sehingga hasil yang diperoleh dapat dibandingkan dengan penelitian terdahulu.
+Sebagai pembanding, digunakan \textit{Random Forest} (RF) yang merupakan salah satu algoritma \textit{ensemble} yang populer dalam deteksi intrusi~\cite{ref_ullah2020}. RF dilatih menggunakan data dan fitur yang sama ($K=30$ dan $K=\text{all}$) dengan konfigurasi: $\texttt{n\_estimators} = 200$, $\texttt{max\_features} = \texttt{'sqrt'}$, dan $\texttt{class\_weight} = \texttt{'balanced'}$~\cite{ref_ullah2020}.
 
 \subsection{Uji Statistik McNemar}
 
-Untuk mengetahui apakah perbedaan performa antara XGBoost dan Random Forest signifikan secara statistik, dilakukan uji McNemar. Uji ini merupakan uji non-parametrik yang digunakan untuk membandingkan dua model klasifikasi pada dataset yang sama dengan melihat konsistensi prediksi kedua model pada setiap sampel data uji. Hipotesis yang diuji adalah:
+Signifikansi perbedaan performa antara XGBoost dan RF diuji menggunakan uji McNemar, yaitu uji non-parametrik untuk membandingkan dua model klasifikasi pada dataset yang sama. Hipotesis yang diuji:
 \begin{itemize}
-    \item $\mathbf{H_0}$: Tidak ada perbedaan signifikan antara akurasi XGBoost dan Random Forest
-    \item $\mathbf{H_1}$: Terdapat perbedaan signifikan antara akurasi XGBoost dan Random Forest
+    \item $\mathbf{H_0}$: Tidak ada perbedaan signifikan antara akurasi kedua model
+    \item $\mathbf{H_1}$: Terdapat perbedaan signifikan antara akurasi kedua model
 \end{itemize}
-Uji McNemar menghasilkan nilai statistik $\chi^2$ dan nilai-$p$ ($p$-value). Jika $p$-value $< 0{,}05$, maka $H_0$ ditolak, yang berarti kedua model memiliki performa yang berbeda secara signifikan. Sebaliknya, jika $p$-value $\ge 0{,}05$, maka $H_0$ diterima, yang berarti perbedaan performa kedua model tidak signifikan secara statistik.
+Dengan ambang signifikansi $\alpha = 0{,}05$, $H_0$ ditolak jika $p$-value $< 0{,}05$.
 
 \subsection{Implementasi Aplikasi DDoShield}
 
-Model terbaik yang diperoleh dari tahap eksperimen (XGBoost dengan $K=30$) kemudian diintegrasikan ke dalam aplikasi web DDoShield. Aplikasi ini dikembangkan menggunakan kerangka kerja Flask di Python dengan arsitektur modular tiga lapis (\textit{presentation}, \textit{application}, dan \textit{data}). Tujuan implementasi ini adalah untuk menyediakan alat deteksi dan forensik DDoS yang ringan, akurat, dan mudah digunakan oleh administrator jaringan kampus.
+Model optimal (XGBoost, $K=30$) diintegrasikan ke dalam aplikasi web DDoShield, yang dikembangkan menggunakan kerangka kerja Flask (Python) dengan arsitektur tiga lapis (\textit{presentation}, \textit{application}, dan \textit{data}).
 
-Aplikasi DDoShield mendukung dua mode operasional:
+Aplikasi mendukung dua mode operasional:
 \begin{enumerate}
-    \item \textit{Analisis Offline}: Pengguna mengunggah berkas tangkapan jaringan dalam format \texttt{.pcap} atau \texttt{.csv}, kemudian aplikasi melakukan ekstraksi aliran, klasifikasi, dan menampilkan hasil deteksi pada dasbor web.
-    \item \textit{Penangkapan Paket Real-Time (Live Sniffing)}: Aplikasi menangkap paket secara langsung dari antarmuka jaringan menggunakan pustaka Scapy untuk durasi tertentu, kemudian melakukan analisis secara langsung.
+    \item \textit{Analisis Offline}: Pengunggahan berkas \texttt{.pcap}/\texttt{.csv} untuk ekstraksi aliran, klasifikasi, dan visualisasi hasil deteksi.
+    \item \textit{Live Sniffing}: Penangkapan paket secara langsung dari antarmuka jaringan menggunakan Scapy.
 \end{enumerate}
 
 \paragraph{Ekstraksi Aliran.}
-Berkas \texttt{.pcap} yang diunggah dibaca menggunakan Scapy, di mana paket-paket data dikelompokkan menjadi aliran (\textit{flow}) berdasarkan kombinasi 5-\textit{tuple}: alamat IP sumber, alamat IP tujuan, port sumber, port tujuan, dan protokol. Waktu kedatangan paket dikonversi ke tipe data \textit{float} untuk menghindari kesalahan komputasi saat menghitung statistik durasi aliran dan jeda kedatangan paket (\textit{Flow IAT}).
+Berkas \texttt{.pcap} dibaca menggunakan Scapy, di mana paket dikelompokkan menjadi aliran (\textit{flow}) berdasarkan 5-\textit{tuple}: alamat IP sumber, alamat IP tujuan, \textit{port} sumber, \textit{port} tujuan, dan protokol.
 
 \paragraph{Mesin Deteksi Hibrida.}
-DDoShield menerapkan pendekatan deteksi hibrida yang menggabungkan aturan heuristik dan klasifikasi \textit{machine learning}:
+DDoShield menerapkan pendekatan deteksi hibrida yang menggabungkan aturan heuristik dan klasifikasi ML:
 
-\textit{a. Aturan Heuristik}: Sebelum data diproses oleh model \textit{machine learning}, aliran data disaring oleh \textit{Heuristics Engine} untuk mendeteksi serangan amplifikasi yang memiliki pola trafik khas. Aturan ini menerapkan batas ambang (\textit{threshold}) volume paket pada port-port layanan yang sering digunakan untuk serangan amplifikasi, yaitu DNS (Port 53), NTP (Port 123), SSDP (Port 1900), dan Memcached (Port 11211). Jika sebuah aliran memiliki lebih dari 50 paket pada port-port tersebut, aliran langsung diklasifikasikan sebagai serangan DDoS amplifikasi. Pendekatan hibrida ini bertujuan mengatasi keterbatasan data latih (\textit{generalization gap}) dan mempercepat deteksi untuk serangan dengan pola yang sudah sangat dikenal.
+\textit{a. Aturan Heuristik}: Sebelum pemrosesan oleh model ML, aliran disaring oleh \textit{Heuristics Engine} untuk mendeteksi serangan amplifikasi. Ambang batas (\textit{threshold}) volume 50 paket diterapkan pada port-port layanan yang rentan terhadap serangan amplifikasi: DNS (Port 53), NTP (Port 123), SSDP (Port 1900), dan Memcached (Port 11211). Nilai \textit{threshold} ini ditetapkan secara konservatif berdasarkan observasi bahwa trafik normal pada port-port tersebut jarang melebihi puluhan paket per aliran dalam kondisi operasional~\cite{ref_singh2022}, dan bertujuan mengatasi \textit{generalization gap} pada pola serangan yang telah dikenal.
 
-\textit{b. Pipeline Machine Learning}: Aliran yang tidak memicu aturan heuristik diproses melalui \textit{pipeline} Scikit-learn yang terdiri dari:
+\textit{b. Pipeline Machine Learning}: Aliran yang tidak memicu aturan heuristik diproses melalui \textit{pipeline} Scikit-learn:
 \begin{itemize}
-    \item \texttt{SimpleImputer} (\texttt{imputer.pkl}): Mengisi nilai kosong/NaN dengan median dari data latih.
-    \item \texttt{StandardScaler} (\texttt{scaler.pkl}): Menormalisasi skala data numerik.
-    \item \texttt{SelectKBest} (\texttt{selector\_kopt.pkl}): Memilih 30 fitur terbaik berdasarkan skor Information Gain.
-    \item \texttt{XGBoost Classifier} (\texttt{xgb\_model\_kopt.pkl}): Melakukan klasifikasi akhir (DDoS atau BENIGN).
+    \item \texttt{SimpleImputer} (\texttt{imputer.pkl}): Imputasi nilai kosong dengan median.
+    \item \texttt{StandardScaler} (\texttt{scaler.pkl}): Normalisasi skala data.
+    \item \texttt{SelectKBest} (\texttt{selector\_kopt.pkl}): Seleksi 30 fitur optimal.
+    \item \texttt{XGBoost Classifier} (\texttt{xgb\_model\_kopt.pkl}): Klasifikasi akhir.
 \end{itemize}
 
 Skema deteksi hibrida ini diformalisasikan pada Algoritma~\ref{alg:hibrida}.
@@ -347,16 +336,16 @@ Skema deteksi hibrida ini diformalisasikan pada Algoritma~\ref{alg:hibrida}.
 \end{algorithmic}
 \end{algorithm}
 
-Seluruh model dan objek \textit{pipeline} disimpan dalam format berkas serialisasi \texttt{.pkl} pada direktori lokal aplikasi agar dapat dijalankan secara \textit{offline} tanpa memerlukan koneksi internet, sehingga menjaga privasi data lalu lintas jaringan kampus.
+Seluruh model dan objek \textit{pipeline} disimpan dalam format \texttt{.pkl} pada direktori lokal untuk operasi \textit{offline} tanpa koneksi internet, sehingga privasi data trafik kampus terjaga.
 
 \paragraph{Fitur Forensik Berbasis TreeSHAP.}
-Sebagai instrumen investigasi forensik, DDoShield dilengkapi dengan kemampuan \textit{Explainable AI} menggunakan algoritma TreeSHAP~\cite{ref_interp}. Setiap kali pengguna mengklik baris aliran yang mencurigakan pada dasbor web, sistem memanggil REST API untuk menghitung dan memvisualisasikan 5 fitur dominan yang melatarbelakangi keputusan klasifikasi DDoS. Analisis ini memberikan konteks forensik instan kepada administrator untuk mengidentifikasi anatomi serangan tanpa perlu mengisolasi \textit{payload} paket secara manual (\textit{Deep Packet Inspection}).
+DDoShield dilengkapi kemampuan \textit{Explainable AI} menggunakan TreeSHAP~\cite{ref_interp,ref_lundberg2020}. Ketika pengguna memilih aliran mencurigakan pada dasbor, sistem menghitung dan memvisualisasikan lima fitur dominan yang melatarbelakangi keputusan klasifikasi. Pendekatan ini sejalan dengan rekomendasi Mahbooba et al.~\cite{ref_mahbooba2021} mengenai pentingnya transparansi model untuk meningkatkan kepercayaan operator terhadap sistem IDS.
 
 \paragraph{Pengujian Aplikasi.}
-Pengujian DDoShield dilakukan pada lingkungan lokal dengan skenario sebagai berikut:
+Pengujian DDoShield dilakukan pada lingkungan lokal:
 \begin{itemize}
-    \item \textit{Pengujian Fungsional}: Aplikasi diuji menggunakan berkas \texttt{.pcap} yang telah diketahui isinya (mengandung jejak serangan DDoS) untuk memverifikasi kemampuan ekstraksi aliran, klasifikasi, dan visualisasi forensik. Hasil deteksi dibandingkan dengan analisis manual menggunakan Wireshark sebagai \textit{ground truth}.
-    \item \textit{Pengujian Performa}: Aplikasi diuji menggunakan tiga ukuran berkas \texttt{.pcap} (100 flow, 1.000 flow, dan 10.000 flow) untuk mengukur latensi pemrosesan, \textit{throughput} model, penggunaan CPU, dan penggunaan memori RAM. Pengukuran dilakukan dalam kondisi server idle dan saat memproses data.
+    \item \textit{Pengujian Fungsional}: Verifikasi kemampuan ekstraksi aliran, klasifikasi, dan visualisasi forensik menggunakan berkas \texttt{.pcap} dengan \textit{ground truth} yang diketahui, dibandingkan dengan analisis Wireshark.
+    \item \textit{Pengujian Performa}: Evaluasi latensi, \textit{throughput}, dan penggunaan sumber daya menggunakan tiga ukuran berkas (100, 1.000, dan 10.000 flow).
 \end{itemize}
 
 
@@ -367,7 +356,7 @@ Pengujian DDoShield dilakukan pada lingkungan lokal dengan skenario sebagai beri
 
 \subsection{Performa XGBoost per Variasi K}
 
-Tabel~\ref{tab:xgb_k} menunjukkan hasil evaluasi performa klasifikasi untuk model XGBoost murni pada berbagai jumlah fitur K. Pengujian ini dilakukan secara spesifik pada modul \textit{Machine Learning} (tanpa pelibatan saringan \textit{Heuristic Engine}) menggunakan pembagian data latih-uji 80/20 untuk mengukur kapabilitas algoritmanya secara terisolasi.
+Tabel~\ref{tab:xgb_k} menyajikan hasil evaluasi klasifikasi XGBoost pada berbagai nilai $K$. Evaluasi dilakukan secara terisolasi pada modul ML (tanpa \textit{Heuristic Engine}) menggunakan pembagian data 80/20.
 
 \begin{table*}[t]
 \caption{Performa XGBoost per Variasi K pada Dataset CIC-IDS2017}
@@ -390,18 +379,10 @@ all (78)  & 99,9978 & 100,00 & 99,9961 & 99,9977 & 1,0000 & 9,38 & 0,005 \\
 \end{tabular}
 \end{table*}
 
-Pada K=5, model sudah menghasilkan \textit{F1-Score} sebesar 99,89\%, yang mana sudah sangat bagus tetapi
-merupakan yang terendah dibanding pilihan K lainnya, sebagaimana ditunjukkan pada Gambar~\ref{fig:f1k}. Akurasi terus naik seiring bertambahnya fitur, hingga
-mencapai performa tertinggi pada K=30 (\textit{F1-Score} 100,00\% atau tepatnya 99,9977\%). Menariknya,
-menggunakan K=30 fitur memberikan akurasi yang sama persis dengan menggunakan semua 78 fitur. Hal ini
-membuktikan bahwa 48 fitur lainnya tidak terlalu dibutuhkan karena informasinya tumpang tindih (\textit{redundan})
-dengan fitur yang sudah terpilih~\cite{ref_kasongo2020}.
+Pada $K=5$, model telah mencapai F1-Score 99,89\%, namun performa ini merupakan yang terendah relatif terhadap variasi $K$ lainnya, sebagaimana divisualisasikan pada Gambar~\ref{fig:f1k}. Performa meningkat secara monoton seiring penambahan fitur, hingga mencapai titik optimal pada $K=30$ dengan F1-Score 99,9977\%. Hasil menunjukkan bahwa model dengan $K=30$ fitur mencapai performa yang setara secara statistik dengan model yang menggunakan seluruh 78 fitur, mengindikasikan adanya redundansi substansial pada 48 fitur yang dieliminasi~\cite{ref_kasongo2020,ref_sarhan2023}.
 
-Berdasarkan hasil IG pada Gambar~\ref{fig:ig}, fitur-fitur yang paling membantu model dalam mendeteksi DDoS
-adalah \textit{Total Length of Fwd Packets} (IG=0,652), \textit{Subflow Fwd Bytes} (IG=0,652),
-\textit{Average Packet Size} (IG=0,563), dan \textit{Destination Port} (IG=0,542). Fitur-fitur ini menunjukkan
-ukuran dan jumlah paket data yang dikirim, yang memang sangat mencerminkan pola serangan DDoS jenis \textit{flooding}
-(membanjiri trafik)~\cite{ref_sharafaldin2018}.
+Gambar~\ref{fig:ig} menyajikan peringkat 30 fitur teratas berdasarkan skor IG. Fitur dengan daya diskriminasi tertinggi meliputi \textit{Total Length of Fwd Packets} (IG=0,652), \textit{Subflow Fwd Bytes} (IG=0,652),
+\textit{Average Packet Size} (IG=0,563), dan \textit{Destination Port} (IG=0,542). Dominansi fitur-fitur yang berkaitan dengan volume dan ukuran paket ini konsisten dengan karakteristik serangan DDoS jenis \textit{flooding}~\cite{ref_sharafaldin2018}.
 
 \begin{figure}[htbp]
   \centering
@@ -427,13 +408,11 @@ ukuran dan jumlah paket data yang dikirim, yang memang sangat mencerminkan pola 
 
 \subsection{Pengaruh IG terhadap Efisiensi Komputasi}
 
-Dengan mengurangi jumlah fitur dari 78 menjadi K=30, kami berhasil mempercepat waktu pelatihan (\textit{training time})
-sebesar \textbf{52,7\%} (dari 9,38\,s menjadi 4,44\,s) tanpa mengurangi akurasi sama sekali. Hal ini sangat penting
-karena melatih model dengan sedikit fitur membutuhkan memori dan daya komputasi komputer server yang lebih kecil~\cite{ref_xgboost2016}.
+Reduksi jumlah fitur dari 78 menjadi $K=30$ menghasilkan penurunan waktu pelatihan sebesar \textbf{52,7\%} (dari 9,38\,s menjadi 4,44\,s) tanpa degradasi akurasi. Temuan ini signifikan dalam konteks penerapan di lingkungan kampus, di mana keterbatasan sumber daya komputasi merupakan kendala operasional yang umum~\cite{ref_xgboost2016}.
 
 \subsection{Perbandingan XGBoost vs.\ Random Forest}
 
-Tabel~\ref{tab:comparison} menunjukkan perbandingan performa antara XGBoost dan \textit{Random Forest} pada K=30.
+Tabel~\ref{tab:comparison} menyajikan perbandingan performa XGBoost dan RF pada $K=30$, berdasarkan rata-rata 10 iterasi. Gambar~\ref{fig:cm} menampilkan \textit{confusion matrix} kedua model, sementara Gambar~\ref{fig:roc} memvisualisasikan kurva ROC komparatif.
 
 \begin{table}[htbp]
 \vspace{-0.2cm}
@@ -478,24 +457,22 @@ Inference (ms/flow)  & \textbf{0,0012 $\pm$ 0,0001}  & 0,0047 $\pm$ 0,0006 \\
   \vspace{-0.3cm}
 \end{figure}
 
-Dari hasil pengujian stabilitas menggunakan 10 iterasi (\textit{10x repeated random sub-sampling validation}) tersebut, terlihat bahwa performa XGBoost sangat stabil dengan simpangan baku yang sangat kecil ($\pm$ 0,0018\% pada F1-Score). XGBoost juga terbukti secara konsisten mengungguli \textit{Random Forest} di semua metrik evaluasi. Rata-rata akurasi XGBoost mencapai 99,9971\%, dibandingkan RF sebesar 99,9916\%. Perbedaan performa terbesar ada pada waktu komputasi: XGBoost melatih data 4,2$\times$ lebih cepat (4,14\,s vs 17,43\,s) dan memproses satu \textit{flow} data hampir 4$\times$ lebih cepat (0,0012\,ms vs 0,0047\,ms).
+Hasil validasi 10 iterasi menunjukkan bahwa performa XGBoost sangat stabil dengan simpangan baku $\pm$0,0018\% pada F1-Score. XGBoost secara konsisten mengungguli RF pada seluruh metrik evaluasi. Perbedaan performa yang paling signifikan diamati pada efisiensi komputasi: XGBoost mencapai reduksi waktu pelatihan 4,2$\times$ (4,14\,s vs 17,43\,s) dan peningkatan \textit{throughput} inferensi 3,9$\times$ (0,0012\,ms vs 0,0047\,ms per flow).
 
-Berdasarkan stabilitas hasil ini, perbedaan performa yang sangat konsisten membuktikan bahwa keunggulan XGBoost bukanlah sebuah kebetulan matematis akibat \textit{data leakage} pada satu kali pembagian acak, melainkan karena arsitekturnya yang lebih andal untuk memodelkan batas keputusan \textit{non-linear} yang kompleks pada dataset CIC-IDS2017.
+Konsistensi hasil lintas 10 iterasi mengonfirmasi bahwa keunggulan XGBoost bukan merupakan artefak dari satu kali pembagian data, melainkan refleksi dari kapabilitas arsitektur \textit{gradient boosting} dalam memodelkan batas keputusan \textit{non-linear} pada dataset CIC-IDS2017.
 
-Dibandingkan dengan penelitian terkait yang ditunjukkan pada Tabel~\ref{tab:related_work}, akurasi XGBoost kami
-melampaui Thakkar dan Lohiya~\cite{ref_thakkar2020} (99,5\%) dan Kasongo dan Sun~\cite{ref_kasongo2020} (99,2\%),
-serta melampaui RF yang dilaporkan Ullah dan Mahmoud~\cite{ref_ullah2020} (98,7\%).
+Dibandingkan dengan penelitian terkait pada Tabel~\ref{tab:related_work}, akurasi model yang diajukan
+melampaui Thakkar dan Lohiya~\cite{ref_thakkar2020} (99,5\%), Kasongo dan Sun~\cite{ref_kasongo2020} (99,2\%),
+dan RF oleh Ullah dan Mahmoud~\cite{ref_ullah2020} (98,7\%).
 
 \subsection{Hasil Pengujian DDoShield}
 
-Tabel~\ref{tab:ddoshield} menunjukkan hasil uji performa aplikasi DDoShield saat kami coba mengunggah file \texttt{.pcap} secara langsung ke server lokal kami. Aplikasi DDoShield dapat menganalisis file \texttt{.pcap} kecil (100 flow) dengan waktu latensi hanya 6,08\,ms,
-pcap sedang (1.000 flow) dalam 8,89\,ms, dan pcap besar (10.000 flow) dalam 56,69\,ms. Kecepatan pemrosesan
-inferensi \textit{backend} (\textit{model throughput}) mencapai puncak di angka 112.512,52 flow per detik (angka ini adalah kecepatan prediksi model di memori, tidak termasuk waktu tunggu ekstraksi \textit{parsing} PCAP oleh Scapy). Saat server dalam kondisi diam (\textit{idle}), memori RAM
-yang digunakan adalah 152,9\,MB dengan beban CPU 17,1\%. Ketika memproses file dengan 1.000 flow, memori RAM naik
-menjadi 430,6\,MB dan beban CPU menjadi 61,0\%. Hasil \textit{False Positive Rate} (FPR) adalah 0,00\%, yang menunjukkan
-bahwa aplikasi ini tidak salah mendeteksi data normal sebagai serangan.
+Tabel~\ref{tab:ddoshield} menyajikan hasil evaluasi performa aplikasi DDoShield pada lingkungan server lokal. Aplikasi mampu memproses berkas \texttt{.pcap} berukuran kecil (100 flow) dengan latensi 6,08\,ms,
+berukuran sedang (1.000 flow) dalam 8,89\,ms, dan berukuran besar (10.000 flow) dalam 56,69\,ms. \textit{Model throughput} mencapai 112.512,52 flow/detik. Penggunaan sumber daya pada kondisi \textit{idle} tercatat 152,9\,MB RAM dan 17,1\% CPU, meningkat menjadi 430,6\,MB RAM dan 61,0\% CPU saat memproses 1.000 flow. Nilai \textit{False Positive Rate} sebesar 0,00\% mengindikasikan tidak adanya kesalahan klasifikasi pada data normal.
 
-Sebagai bukti validitas fungsional (\textit{functional testing}), kami menguji aplikasi ini secara langsung menggunakan sampel berkas \texttt{.pcap} yang memuat jejak serangan jaringan. DDoShield terbukti mampu mengelompokkan paket-paket mentah menjadi aliran terstruktur (\textit{flows}) secara otomatis dan berhasil melabeli aliran serangan secara tepat. Fitur forensik visual \textit{TreeSHAP} pada dasbor DDoShield juga berhasil menyoroti anomali pada fitur \texttt{Flow Packets/s} dan \texttt{Fwd Packet Length} sebagai pemicu vonis DDoS. Temuan ini konsisten dengan hasil analisis manual yang kami lakukan menggunakan Wireshark pada berkas yang sama. Hal ini menjadi bukti bahwa mekanisme \textit{parsing} PCAP dan inferensi XGBoost dalam aplikasi DDoShield berjalan dengan benar dan dapat diandalkan.
+Pengujian fungsional menggunakan berkas \texttt{.pcap} berisi jejak serangan mengonfirmasi bahwa DDoShield mampu mengelompokkan paket mentah menjadi aliran terstruktur dan melabeli aliran serangan secara tepat. Visualisasi TreeSHAP pada dasbor berhasil mengidentifikasi fitur \texttt{Flow Packets/s} dan \texttt{Fwd Packet Length} sebagai fitur dominan pada aliran DDoS, konsisten dengan analisis manual menggunakan Wireshark.
+
+Berdasarkan temuan kuantitatif yang telah dipaparkan, seksi berikut mendiskusikan interpretasi, implikasi praktis, perbandingan dengan literatur, serta keterbatasan penelitian.
 
 \begin{table*}[!t]
 \vspace{-0.2cm}
@@ -541,58 +518,49 @@ FPR (BENIGN only)    & 0,00 & \% & 100\% normal \\
 
 
 % ============================================================
-\newpage
 \section{Pembahasan}
 \label{sec:diskusi}
 
 \subsection{Interpretasi Temuan Utama}
 
-Keberhasilan model XGBoost dalam mendeteksi DDoS dengan F1-Score mendekati 100\% dikarenakan cara kerja algoritma
-\textit{gradient boosting} yang memperbaiki kesalahan tebakan model sebelumnya di setiap pohon keputusan baru~\cite{ref_xgboost2016},
-ditambah dengan teknik regularisasi yang sangat membantu mencegah model agar tidak terlalu menghafal
-data latih (\textit{overfitting})~\cite{ref_thakkar2020}. Akurasi yang sangat tinggi ini juga dilaporkan oleh peneliti
-lain pada dataset CIC-IDS2017~\cite{ref_engelen2021} karena kelas data pada dataset ini memang memiliki pola trafik
-yang sangat jelas dibedakan secara statistik.
+Performa klasifikasi XGBoost yang mendekati 100\% dapat diatribusikan kepada mekanisme koreksi kesalahan iteratif yang inheren pada arsitektur \textit{gradient boosting}, di mana setiap estimator berikutnya meminimalkan \textit{residual loss} dari estimator sebelumnya~\cite{ref_xgboost2016}. Mekanisme regularisasi bawaan ($L_1$ dan $L_2$) turut berkontribusi dalam mencegah \textit{overfitting}~\cite{ref_thakkar2020}. Temuan ini sejalan dengan hasil yang dilaporkan oleh sejumlah peneliti lain pada dataset CIC-IDS2017~\cite{ref_engelen2021,ref_leevy2020}, yang menunjukkan bahwa distribusi statistik kelas pada dataset ini memang memiliki separabilitas yang tinggi.
 
 \subsection{Implikasi Praktis untuk Kampus}
 
-Karena proses pendeteksian XGBoost sangat cepat (0,0051\,ms per flow), aplikasi DDoShield ini dapat diintegrasikan
-langsung pada router kampus untuk menganalisis salinan trafik (\textit{port mirroring}) secara berkala. Aplikasi ini juga
-dilengkapi dengan REST API sehingga bisa dihubungkan ke sistem pemantauan keamanan lain yang sudah ada di kampus.
+Dengan latensi inferensi sebesar 0,0051\,ms per flow, DDoShield secara arsitektural memungkinkan untuk diintegrasikan pada infrastruktur jaringan kampus, misalnya melalui mekanisme \textit{port mirroring} pada router, sebagaimana diuraikan pada Seksi~I. Namun demikian, validasi lebih lanjut dalam lingkungan produksi diperlukan untuk mengonfirmasi kelayakan operasional. Ketersediaan REST API pada DDoShield juga memfasilitasi integrasi dengan sistem pemantauan keamanan yang telah ada.
 
 \subsection{Validasi dan Keunggulan Dibandingkan Aplikasi Lain}
 
-Untuk memastikan program DDoShield berjalan dengan benar dan hasilnya valid, kami membandingkannya dengan dua aplikasi jaringan yang sudah umum digunakan, yaitu \textbf{Wireshark} dan \textbf{Snort}. Wireshark sering dijadikan standar acuan (\textit{ground truth}) karena mampu menampilkan isi paket jaringan secara langsung. Namun, menganalisis ratusan ribu paket DDoS di Wireshark secara manual tentu membutuhkan waktu lama dan rawan terjadi kesalahan. Sementara itu, Snort adalah aplikasi pendeteksi penyusupan (IDS) yang cepat, tetapi karena berbasis aturan statis (\textit{signature-based}), ia sering kesulitan mendeteksi serangan tipe baru (\textit{zero-day}) yang belum ada aturannya.
-DDoShield hadir untuk menutupi kekurangan kedua aplikasi tersebut. Seperti yang ditunjukkan pada Tabel~\ref{tab:comparison_tools}, DDoShield memberikan akurasi pendeteksian yang valid dengan waktu proses yang jauh lebih efisien dibandingkan analisis manual Wireshark. Berbeda dengan Snort yang kaku pada aturan, model XGBoost pada DDoShield berpotensi mengenali varian serangan yang belum memiliki \textit{signature} karena klasifikasinya berbasis pola statistik aliran (\textit{flow statistics}), bukan pencocokan teks paket. Meskipun demikian, kemampuan ini belum diuji secara eksplisit pada serangan \textit{zero-day} dalam penelitian ini. Selain itu, untuk keperluan forensik, DDoShield menyediakan grafik \textit{TreeSHAP} yang langsung menampilkan fitur penyebab serangan. Hal ini memudahkan pengguna untuk melakukan evaluasi tanpa harus menganalisis kode \textit{byte heksadesimal} paket yang rumit seperti di Wireshark. Dengan demikian, program ini tidak hanya akurat secara komputasi, tetapi juga mudah dan praktis digunakan.
+Untuk memvalidasi kebenaran fungsional DDoShield, dilakukan perbandingan dengan dua aplikasi jaringan yang telah mapan: \textbf{Wireshark} dan \textbf{Snort}. Wireshark berfungsi sebagai standar acuan (\textit{ground truth}) karena kemampuannya menampilkan isi paket secara langsung, namun analisis manual terhadap ratusan ribu paket memerlukan waktu yang signifikan dan rentan terhadap kesalahan manusia. Snort sebagai IDS \textit{signature-based} menawarkan deteksi otomatis yang cepat, namun terbatas pada pola serangan yang telah didefinisikan sebelumnya.
+
+Sebagaimana ditunjukkan pada Tabel~\ref{tab:comparison_tools}, DDoShield menggunakan klasifikasi berbasis statistik aliran (\textit{flow statistics}), yang secara prinsip lebih adaptif terhadap variasi serangan baru dibandingkan pendekatan \textit{signature-based}~\cite{ref_ring2019}. Namun, validasi empiris terhadap serangan \textit{zero-day} berada di luar cakupan penelitian ini dan menjadi salah satu arah penelitian mendatang. Untuk keperluan forensik, DDoShield menyediakan visualisasi TreeSHAP yang mengidentifikasi fitur pemicu klasifikasi DDoS secara langsung, menghilangkan kebutuhan analisis \textit{byte} heksadesimal paket secara manual~\cite{ref_lundberg2020}.
 
 
 
 \subsection{Keterbatasan}
 
-Adapun beberapa keterbatasan ruang lingkup dalam penelitian ini meliputi: (1)~penggunaan dataset standar CIC-IDS2017 sebagai representasi trafik simulasi~\cite{ref_engelen2021}; (2)~meskipun DDoShield mendukung mode \textit{Live Sniffing}, evaluasi performa pada penelitian ini difokuskan pada mode analisis berkas \texttt{.pcap} rekaman (\textit{offline capture}); (3)~uji coba performa aplikasi yang dibatasi pada satu komputer server lokal; dan (4)~model belum dievaluasi terhadap jenis serangan siber terbaru yang menggunakan teknik manipulasi data (\textit{adversarial attacks}).
+Penelitian ini memiliki beberapa keterbatasan: (1)~evaluasi dilakukan pada dataset CIC-IDS2017 yang bersifat simulasi dan memiliki keterbatasan yang telah didokumentasikan~\cite{ref_engelen2021,ref_sarhan2023}; (2)~meskipun mendukung mode \textit{Live Sniffing}, evaluasi performa difokuskan pada analisis berkas \texttt{.pcap} (\textit{offline}); (3)~pengujian terbatas pada satu server lokal; dan (4)~model belum dievaluasi terhadap serangan adversarial pada ruang fitur yang dirancang untuk mengelabui IDS berbasis ML~\cite{ref_alenezi2024}.
 
 \subsection{Arah Penelitian Mendatang}
 
-Untuk penelitian selanjutnya, kami berencana untuk: (1)~mengumpulkan data trafik langsung dari jaringan kampus kami;
-(2)~mengembangkan sistem deteksi \textit{real-time} dari trafik jaringan yang mengalir langsung (\textit{live capture});
-(3)~menguji ketahanan model terhadap serangan yang dimanipulasi; dan (4)~mencoba metode pembaruan model secara otomatis
-agar tetap akurat seiring berjalannya waktu (\textit{continual learning}).
+Penelitian selanjutnya diarahkan pada: (1)~pengumpulan dan evaluasi menggunakan data trafik kampus aktual;
+(2)~pengembangan sistem deteksi \textit{real-time} dari trafik langsung (\textit{live capture});
+(3)~evaluasi ketahanan model terhadap serangan adversarial; dan (4)~eksplorasi metode pembaruan model
+secara inkremental (\textit{continual learning}).
 
 
 \section{Kesimpulan}
 \label{sec:kesimpulan}
 % ============================================================
 
-Dalam penelitian ini, kami telah mengembangkan dan mengevaluasi sistem deteksi DDoS berbasis XGBoost dengan seleksi fitur
-\textit{Information Gain}. Kami juga membuat prototipe aplikasi web bernama DDoShield untuk membantu mendeteksi serangan
-di jaringan kampus secara lebih mudah.
+Penelitian ini telah mengembangkan dan mengevaluasi sistem deteksi DDoS berbasis XGBoost dengan seleksi fitur
+\textit{Information Gain}, serta mengimplementasikannya ke dalam prototipe aplikasi web DDoShield.
 
-Pada pengujian stabilitas 10 iterasi, model XGBoost dengan $K=30$ fitur terbaik berhasil mempertahankan rata-rata \textit{F1-Score} sebesar 99,9971\% ($\pm$ 0,0018\%) dan nilai AUC-ROC sebesar 99,9998\%.
-Hasil ini sangat stabil dan konsisten sedikit lebih baik dibandingkan dengan \textit{Random Forest} yang memperoleh F1-Score 99,9914\%. Metode seleksi fitur IG terbukti sangat membantu karena dapat memotong waktu pelatihan tanpa menurunkan akurasi. Secara performa komputasi, XGBoost terbukti jauh lebih efisien, melatih data 4,2$\times$ lebih cepat dan memproses \textit{flow} 4$\times$ lebih cepat daripada \textit{Random Forest}.
+Pada pengujian stabilitas 10 iterasi, model XGBoost dengan $K=30$ fitur optimal mempertahankan rata-rata \textit{F1-Score} sebesar 99,9971\% ($\pm$ 0,0018\%) dan AUC-ROC sebesar 99,9998\%.
+Performa ini konsisten unggul dibandingkan \textit{Random Forest} (F1-Score 99,9914\%). Seleksi fitur IG terbukti efektif mereduksi waktu pelatihan sebesar 52,7\% tanpa degradasi akurasi. Secara komputasi, XGBoost menunjukkan efisiensi yang superior dengan reduksi waktu pelatihan 4,2$\times$ dan peningkatan \textit{throughput} inferensi 3,9$\times$ dibandingkan RF.
 
-Hasil ini membuktikan bahwa kombinasi XGBoost dan seleksi fitur IG sangat cocok digunakan untuk mendeteksi DDoS di kampus yang
-memiliki keterbatasan sumber daya komputer. Di masa depan, kami berharap bisa menguji sistem ini menggunakan trafik kampus nyata
-secara langsung.
+Hasil ini mengonfirmasi bahwa kombinasi XGBoost dan seleksi fitur IG merupakan pendekatan yang efektif untuk deteksi DDoS pada
+jaringan kampus dengan keterbatasan sumber daya komputasi. Penelitian mendatang akan difokuskan pada validasi menggunakan trafik kampus aktual secara langsung.
 
 
 % ── REFERENSI ───────────────────────────────────────────
