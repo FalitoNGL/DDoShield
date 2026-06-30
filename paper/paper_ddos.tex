@@ -90,7 +90,7 @@ learning}
 % ============================================================
 
 Serangan \textit{Distributed Denial of Service} (DDoS) merupakan salah satu ancaman
-keamanan siber yang paling prevalen dan merugikan secara global~\cite{ref_singh2022}. Laporan
+keamanan siber yang paling prevalen dan merugikan secara global~\cite{ref_sahoo2020}. Laporan
 industri dari NETSCOUT mencatat peningkatan volume serangan DDoS secara konsisten
 setiap tahun~\cite{ref_netscout2023}, sementara Cloudflare melaporkan kenaikan serangan
 DDoS berbasis HTTP sebesar 65\% dibandingkan periode sebelumnya~\cite{ref_cloudflare2023}. Serangan ini
@@ -149,7 +149,7 @@ serangan umumnya dihasilkan secara simultan oleh jaringan komputer yang telah te
 yang dikenal sebagai \textit{botnet}~\cite{ref_ring2019}. Secara taksonomi, serangan DDoS diklasifikasikan
 menjadi tiga kategori: (1)~\textit{volumetric attacks} yang bertujuan menjenuhkan \textit{bandwidth};
 (2)~\textit{protocol attacks} yang mengeksploitasi kelemahan protokol komunikasi; dan
-(3)~\textit{application layer attacks} yang menargetkan layanan aplikasi secara langsung~\cite{ref_singh2022}.
+(3)~\textit{application layer attacks} yang menargetkan layanan aplikasi secara langsung~\cite{ref_sahoo2020}.
 
 \subsection{Evolusi Sistem Deteksi Intrusi}
 
@@ -159,7 +159,7 @@ tanpa memerlukan basis data aturan yang telah didefinisikan sebelumnya~\cite{ref
 Berbagai algoritma ML telah dievaluasi untuk deteksi intrusi, antara lain
 \textit{Decision Tree}~\cite{ref_dt_ids}, \textit{Random Forest}~\cite{ref_ullah2020},
 \textit{Convolutional Neural Network} (CNN)~\cite{ref_cnn_ids}, \textit{Long Short-Term Memory} (LSTM)~\cite{ref_lstm_ids},
-dan XGBoost~\cite{ref_thakkar2020}. Studi survei terbaru oleh Ferrag et al.~\cite{ref_ferrag2022}
+dan XGBoost~\cite{ref_thakkar2020}. Studi survei terbaru oleh Ferrag et al.~\cite{ref_ahmad2020}
 mengonfirmasi bahwa metode \textit{ensemble} berbasis pohon keputusan, termasuk XGBoost, secara
 konsisten menunjukkan performa superior pada dataset benchmark IDS.
 
@@ -230,7 +230,7 @@ Tahap \textit{preprocessing} dilakukan melalui serangkaian langkah untuk memasti
 
     \item \textit{Penghapusan Fitur}: Fitur dengan proporsi nilai kosong melebihi 50\% dieliminasi dari dataset karena dianggap tidak reliabel.
 
-    \item \textit{Imputasi Data}: Nilai kosong pada fitur yang tersisa diisi menggunakan nilai median. Statistik median dipilih karena ketahanannya (\textit{robustness}) terhadap nilai pencilan (\textit{outliers}), sebagaimana direkomendasikan untuk data jaringan yang sering mengandung anomali ekstrem~\cite{ref_lin2015}.
+    \item \textit{Imputasi Data}: Nilai kosong pada fitur yang tersisa diisi menggunakan nilai median. Statistik median dipilih karena ketahanannya (\textit{robustness}) terhadap nilai pencilan (\textit{outliers}), sebagaimana direkomendasikan untuk data jaringan yang sering mengandung anomali ekstrem~\cite{ref_liu2020}.
 
     \item \textit{Normalisasi}: Seluruh fitur numerik dinormalisasi menggunakan \texttt{StandardScaler} (Scikit-learn) sehingga memiliki rata-rata 0 dan standar deviasi 1.
 \end{enumerate}
@@ -296,7 +296,7 @@ Berkas \texttt{.pcap} dibaca menggunakan Scapy, di mana paket dikelompokkan menj
 \paragraph{Mesin Deteksi Hibrida.}
 DDoShield menerapkan pendekatan deteksi hibrida yang menggabungkan aturan heuristik dan klasifikasi ML:
 
-\textit{a. Aturan Heuristik}: Sebelum pemrosesan oleh model ML, aliran disaring oleh \textit{Heuristics Engine} untuk mendeteksi serangan amplifikasi. Ambang batas (\textit{threshold}) volume 50 paket diterapkan pada port-port layanan yang rentan terhadap serangan amplifikasi: DNS (Port 53), NTP (Port 123), SSDP (Port 1900), dan Memcached (Port 11211). Nilai \textit{threshold} ini ditetapkan secara konservatif berdasarkan observasi bahwa trafik normal pada port-port tersebut jarang melebihi puluhan paket per aliran dalam kondisi operasional~\cite{ref_singh2022}, dan bertujuan mengatasi \textit{generalization gap} pada pola serangan yang telah dikenal.
+\textit{a. Aturan Heuristik}: Sebelum pemrosesan oleh model ML, aliran disaring oleh \textit{Heuristics Engine} untuk mendeteksi serangan amplifikasi. Ambang batas (\textit{threshold}) volume 50 paket diterapkan pada port-port layanan yang rentan terhadap serangan amplifikasi: DNS (Port 53), NTP (Port 123), SSDP (Port 1900), dan Memcached (Port 11211). Nilai \textit{threshold} ini ditetapkan secara konservatif berdasarkan observasi bahwa trafik normal pada port-port tersebut jarang melebihi puluhan paket per aliran dalam kondisi operasional~\cite{ref_sahoo2020}, dan bertujuan mengatasi \textit{generalization gap} pada pola serangan yang telah dikenal.
 
 \textit{b. Pipeline Machine Learning}: Aliran yang tidak memicu aturan heuristik diproses melalui \textit{pipeline} Scikit-learn:
 \begin{itemize}
@@ -339,7 +339,7 @@ Skema deteksi hibrida ini diformalisasikan pada Algoritma~\ref{alg:hibrida}.
 Seluruh model dan objek \textit{pipeline} disimpan dalam format \texttt{.pkl} pada direktori lokal untuk operasi \textit{offline} tanpa koneksi internet, sehingga privasi data trafik kampus terjaga.
 
 \paragraph{Fitur Forensik Berbasis TreeSHAP.}
-DDoShield dilengkapi kemampuan \textit{Explainable AI} menggunakan TreeSHAP~\cite{ref_interp,ref_lundberg2020}. Ketika pengguna memilih aliran mencurigakan pada dasbor, sistem menghitung dan memvisualisasikan lima fitur dominan yang melatarbelakangi keputusan klasifikasi. Pendekatan ini sejalan dengan rekomendasi Mahbooba et al.~\cite{ref_mahbooba2021} mengenai pentingnya transparansi model untuk meningkatkan kepercayaan operator terhadap sistem IDS.
+DDoShield dilengkapi kemampuan \textit{Explainable AI} menggunakan TreeSHAP~\cite{ref_interp,ref_wei2021}. Ketika pengguna memilih aliran mencurigakan pada dasbor, sistem menghitung dan memvisualisasikan lima fitur dominan yang melatarbelakangi keputusan klasifikasi. Pendekatan ini sejalan dengan rekomendasi Mahbooba et al.~\cite{ref_mahbooba2021} mengenai pentingnya transparansi model untuk meningkatkan kepercayaan operator terhadap sistem IDS.
 
 \paragraph{Pengujian Aplikasi.}
 Pengujian DDoShield dilakukan pada lingkungan lokal:
@@ -379,7 +379,7 @@ all (78)  & 99,9978 & 100,00 & 99,9961 & 99,9977 & 1,0000 & 9,38 & 0,005 \\
 \end{tabular}
 \end{table*}
 
-Pada $K=5$, model telah mencapai F1-Score 99,89\%, namun performa ini merupakan yang terendah relatif terhadap variasi $K$ lainnya, sebagaimana divisualisasikan pada Gambar~\ref{fig:f1k}. Performa meningkat secara monoton seiring penambahan fitur, hingga mencapai titik optimal pada $K=30$ dengan F1-Score 99,9977\%. Hasil menunjukkan bahwa model dengan $K=30$ fitur mencapai performa yang setara secara statistik dengan model yang menggunakan seluruh 78 fitur, mengindikasikan adanya redundansi substansial pada 48 fitur yang dieliminasi~\cite{ref_kasongo2020,ref_sarhan2023}.
+Pada $K=5$, model telah mencapai F1-Score 99,89\%, namun performa ini merupakan yang terendah relatif terhadap variasi $K$ lainnya, sebagaimana divisualisasikan pada Gambar~\ref{fig:f1k}. Performa meningkat secara monoton seiring penambahan fitur, hingga mencapai titik optimal pada $K=30$ dengan F1-Score 99,9977\%. Hasil menunjukkan bahwa model dengan $K=30$ fitur mencapai performa yang setara secara statistik dengan model yang menggunakan seluruh 78 fitur, mengindikasikan adanya redundansi substansial pada 48 fitur yang dieliminasi~\cite{ref_kasongo2020,ref_alzahrani2021}.
 
 Gambar~\ref{fig:ig} menyajikan peringkat 30 fitur teratas berdasarkan skor IG. Fitur dengan daya diskriminasi tertinggi meliputi \textit{Total Length of Fwd Packets} (IG=0,652), \textit{Subflow Fwd Bytes} (IG=0,652),
 \textit{Average Packet Size} (IG=0,563), dan \textit{Destination Port} (IG=0,542). Dominansi fitur-fitur yang berkaitan dengan volume dan ukuran paket ini konsisten dengan karakteristik serangan DDoS jenis \textit{flooding}~\cite{ref_sharafaldin2018}.
@@ -533,13 +533,13 @@ Dengan latensi inferensi sebesar 0,0051\,ms per flow, DDoShield secara arsitektu
 
 Untuk memvalidasi kebenaran fungsional DDoShield, dilakukan perbandingan dengan dua aplikasi jaringan yang telah mapan: \textbf{Wireshark} dan \textbf{Snort}. Wireshark berfungsi sebagai standar acuan (\textit{ground truth}) karena kemampuannya menampilkan isi paket secara langsung, namun analisis manual terhadap ratusan ribu paket memerlukan waktu yang signifikan dan rentan terhadap kesalahan manusia. Snort sebagai IDS \textit{signature-based} menawarkan deteksi otomatis yang cepat, namun terbatas pada pola serangan yang telah didefinisikan sebelumnya.
 
-Sebagaimana ditunjukkan pada Tabel~\ref{tab:comparison_tools}, DDoShield menggunakan klasifikasi berbasis statistik aliran (\textit{flow statistics}), yang secara prinsip lebih adaptif terhadap variasi serangan baru dibandingkan pendekatan \textit{signature-based}~\cite{ref_ring2019}. Namun, validasi empiris terhadap serangan \textit{zero-day} berada di luar cakupan penelitian ini dan menjadi salah satu arah penelitian mendatang. Untuk keperluan forensik, DDoShield menyediakan visualisasi TreeSHAP yang mengidentifikasi fitur pemicu klasifikasi DDoS secara langsung, menghilangkan kebutuhan analisis \textit{byte} heksadesimal paket secara manual~\cite{ref_lundberg2020}.
+Sebagaimana ditunjukkan pada Tabel~\ref{tab:comparison_tools}, DDoShield menggunakan klasifikasi berbasis statistik aliran (\textit{flow statistics}), yang secara prinsip lebih adaptif terhadap variasi serangan baru dibandingkan pendekatan \textit{signature-based}~\cite{ref_ring2019}. Namun, validasi empiris terhadap serangan \textit{zero-day} berada di luar cakupan penelitian ini dan menjadi salah satu arah penelitian mendatang. Untuk keperluan forensik, DDoShield menyediakan visualisasi TreeSHAP yang mengidentifikasi fitur pemicu klasifikasi DDoS secara langsung, menghilangkan kebutuhan analisis \textit{byte} heksadesimal paket secara manual~\cite{ref_wei2021}.
 
 
 
 \subsection{Keterbatasan}
 
-Penelitian ini memiliki beberapa keterbatasan: (1)~evaluasi dilakukan pada dataset CIC-IDS2017 yang bersifat simulasi dan memiliki keterbatasan yang telah didokumentasikan~\cite{ref_engelen2021,ref_sarhan2023}; (2)~meskipun mendukung mode \textit{Live Sniffing}, evaluasi performa difokuskan pada analisis berkas \texttt{.pcap} (\textit{offline}); (3)~pengujian terbatas pada satu server lokal; dan (4)~model belum dievaluasi terhadap serangan adversarial pada ruang fitur yang dirancang untuk mengelabui IDS berbasis ML~\cite{ref_alenezi2024}.
+Penelitian ini memiliki beberapa keterbatasan: (1)~evaluasi dilakukan pada dataset CIC-IDS2017 yang bersifat simulasi dan memiliki keterbatasan yang telah didokumentasikan~\cite{ref_engelen2021,ref_alzahrani2021}; (2)~meskipun mendukung mode \textit{Live Sniffing}, evaluasi performa difokuskan pada analisis berkas \texttt{.pcap} (\textit{offline}); (3)~pengujian terbatas pada satu server lokal; dan (4)~model belum dievaluasi terhadap serangan adversarial pada ruang fitur yang dirancang untuk mengelabui IDS berbasis ML~\cite{ref_alenezi2024}.
 
 \subsection{Arah Penelitian Mendatang}
 
